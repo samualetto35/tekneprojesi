@@ -58,38 +58,38 @@ function BoatCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow group pt-0">
-      {/* Resim Alanı */}
-      <div className="h-56 bg-gray-200 relative overflow-hidden">
-        <img 
-          src={boat.image_urls?.[0] || "https://via.placeholder.com/400"} 
-          alt={boat.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <Badge className="absolute top-4 right-4 bg-black/70">
-          {boat.capacity} Kişilik
-        </Badge>
-      </div>
-
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">{boat.title}</CardTitle>
-        <div className="flex items-center text-slate-500 text-sm">
-          <MapPin className="w-4 h-4 mr-1" /> {boat.location}
+    <Link href={`/listings/${boat.id}?type=${priceType}`} className="block">
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group pt-0 cursor-pointer hover:-translate-y-1">
+        {/* Resim Alanı */}
+        <div className="h-56 bg-gray-200 relative overflow-hidden">
+          <img 
+            src={boat.image_urls?.[0] || "https://via.placeholder.com/400"} 
+            alt={boat.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+          <Badge className="absolute top-4 right-4 bg-black/70">
+            {boat.capacity} Kişilik
+          </Badge>
         </div>
-      </CardHeader>
 
-      <CardFooter className="flex justify-between items-center border-t pt-4 bg-slate-50">
-        <div>
-          <span className="text-xl font-bold text-slate-900">
-            {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(getPrice())}
-          </span>
-          <span className="text-xs text-slate-500 ml-1">{getPriceLabel()}</span>
-        </div>
-        <Link href={`/listings/${boat.id}?type=${priceType}`}>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg">{boat.title}</CardTitle>
+          <div className="flex items-center text-slate-500 text-sm">
+            <MapPin className="w-4 h-4 mr-1" /> {boat.location}
+          </div>
+        </CardHeader>
+
+        <CardFooter className="flex justify-between items-center border-t pt-4 bg-slate-50">
+          <div>
+            <span className="text-xl font-bold text-slate-900">
+              {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(getPrice())}
+            </span>
+            <span className="text-xs text-slate-500 ml-1">{getPriceLabel()}</span>
+          </div>
           <Button size="sm">Detay Gör</Button>
-        </Link>
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+    </Link>
   );
 }
 
