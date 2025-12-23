@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Clock, Calendar, Moon, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SimpleSelect } from "@/components/ui/simple-select";
 
 type CharterType = "" | "hourly" | "daily" | "stay";
 
@@ -102,22 +103,13 @@ export default function SearchBar({
           <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${iconStyle}`}>
             <MapPin className="w-4 h-4 md:w-5 md:h-5" />
           </div>
-          <select
+          <SimpleSelect
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className={`w-full ${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
-          >
-            {locationOptions.map((loc) => (
-              <option key={loc.value} value={loc.value}>
-                {loc.label}
-              </option>
-            ))}
-          </select>
-          <div className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${iconStyle}`}>
-            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+            onChange={setLocation}
+            options={locationOptions}
+            className="w-full"
+            buttonClassName={`${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} ${inputStyle} ${isHero ? "bg-white/10" : ""} pl-8 md:pl-10`}
+          />
         </div>
 
         <div className="flex-1 min-w-0 relative">
@@ -132,22 +124,13 @@ export default function SearchBar({
               <Search className="w-4 h-4 md:w-5 md:h-5" />
             )}
           </div>
-          <select
+          <SimpleSelect
             value={charterType}
-            onChange={(e) => setCharterType(e.target.value as CharterType)}
-            className={`w-full ${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
-          >
-            {CHARTER_TYPES.map((type) => (
-              <option key={type.value} value={type.value}>
-                {type.label}
-              </option>
-            ))}
-          </select>
-          <div className={`absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none ${iconStyle}`}>
-            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+            onChange={(val) => setCharterType(val as CharterType)}
+            options={CHARTER_TYPES.map(({ value, label }) => ({ value, label }))}
+            className="w-full"
+            buttonClassName={`${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} ${inputStyle} ${isHero ? "bg-white/10" : ""} pl-8 md:pl-10`}
+          />
         </div>
 
         <Button
