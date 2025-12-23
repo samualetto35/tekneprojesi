@@ -13,9 +13,10 @@ export default function Header({ transparent = false }: HeaderProps) {
   const isHome = pathname === "/";
   const showTransparent = transparent || isHome;
 
+  // Avoid fixed/sticky headers to keep content fully scrollable/clickable on mobile
   const bgClasses = showTransparent
     ? "absolute top-0 left-0 right-0 text-white"
-    : "sticky top-0 left-0 right-0 bg-white/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-slate-200 text-slate-900";
+    : "relative bg-white/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur border-b border-slate-200 text-slate-900";
 
   return (
     <header
