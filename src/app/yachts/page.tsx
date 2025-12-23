@@ -141,12 +141,14 @@ export default async function YachtsPage({
       <ScrollToTopOnMount />
       <section className="bg-white border-b">
         <div className="container mx-auto px-4 py-5">
-          <SearchBar
-            locations={locations}
-            defaultLocation={locationFilter}
-            defaultType={rentalType}
-            variant="default"
-          />
+          <div className="md:hidden">
+            <SearchBar
+              locations={locations}
+              defaultLocation={locationFilter}
+              defaultType={rentalType}
+              variant="default"
+            />
+          </div>
           <div className="mt-4 flex flex-row items-center gap-2">
             <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -183,14 +185,14 @@ export default async function YachtsPage({
 
           <div className="mt-6 flex flex-col gap-3">
             <div className="text-sm text-slate-500">Tekneler &gt; {breadcrumbText}</div>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-900">{titleText}</h1>
-                <p className="text-sm text-slate-500 mt-1">{listingsCount} ilan</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-500">Sırala:</span>
-                <SortSelect defaultValue={sortKey} />
+            <div className="flex flex-col gap-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">{titleText}</h1>
+              <div className="flex items-center justify-between gap-3 flex-nowrap">
+                <p className="text-sm text-slate-500">{listingsCount} ilan</p>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-sm text-slate-500">Sırala:</span>
+                  <SortSelect defaultValue={sortKey} />
+                </div>
               </div>
             </div>
           </div>

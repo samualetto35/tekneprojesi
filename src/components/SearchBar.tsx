@@ -19,6 +19,8 @@ interface SearchBarProps {
   defaultLocation?: string;
   defaultType?: CharterType;
   variant?: "hero" | "default";
+  fullWidthOnDesktop?: boolean;
+  size?: "default" | "compact";
 }
 
 export default function SearchBar({
@@ -26,6 +28,8 @@ export default function SearchBar({
   defaultLocation = "",
   defaultType = "",
   variant = "hero",
+  fullWidthOnDesktop = false,
+  size = "default",
 }: SearchBarProps) {
   const router = useRouter();
   const [location, setLocation] = useState(defaultLocation);
@@ -59,10 +63,11 @@ export default function SearchBar({
   );
 
   const isHero = variant === "hero";
+  const isCompact = size === "compact" && !isHero;
 
   const wrapperStyle = isHero
     ? "bg-white/15 backdrop-blur-xl border border-white/25 shadow-[0_20px_60px_-25px_rgba(0,0,0,0.45)]"
-    : "bg-white/90 backdrop-blur-sm border border-slate-200/70 shadow-lg";
+    : "bg-white/90 backdrop-blur-sm border border-slate-200/70";
 
   const inputStyle = isHero
     ? "bg-white/10 border-white/20 text-white placeholder-white/80 focus:ring-white/50"
@@ -70,10 +75,28 @@ export default function SearchBar({
 
   const iconStyle = isHero ? "text-white/80" : "text-slate-400";
 
+  const outerPadding = isHero
+    ? "p-2.5"
+    : isCompact
+    ? "p-1"
+    : "p-1.5 md:p-2";
+
+  const controlHeights = isCompact ? "h-8 md:h-9" : "h-9 md:h-10";
+  const controlFontSize = isCompact ? "text-xs md:text-sm" : "text-sm md:text-base";
+  const controlPadding = isCompact
+    ? "pl-7 md:pl-9 pr-5 md:pr-7"
+    : "pl-8 md:pl-10 pr-6 md:pr-8";
+  const buttonHeights = isCompact ? "h-8 md:h-9" : "h-9 md:h-10";
+  const buttonFontSize = isCompact ? "text-xs md:text-sm" : "text-sm md:text-base";
+
+  const outerWidthClass = fullWidthOnDesktop
+    ? "w-full max-w-full md:max-w-5xl lg:max-w-6xl mx-auto"
+    : "w-full max-w-4xl mx-auto";
+
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className={outerWidthClass}>
       <div
-        className={`${wrapperStyle} rounded-full p-2.5 flex flex-row flex-nowrap items-center gap-1.5`}
+        className={`${wrapperStyle} rounded-full ${outerPadding} flex flex-row flex-nowrap items-center gap-1`}
       >
         <div className="flex-1 min-w-0 relative">
           <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${iconStyle}`}>
@@ -82,7 +105,7 @@ export default function SearchBar({
           <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className={`w-full h-10 md:h-10 pl-9 md:pl-10 pr-7 md:pr-8 rounded-full border font-medium text-sm md:text-base focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
+            className={`w-full ${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
           >
             {locationOptions.map((loc) => (
               <option key={loc.value} value={loc.value}>
@@ -112,7 +135,7 @@ export default function SearchBar({
           <select
             value={charterType}
             onChange={(e) => setCharterType(e.target.value as CharterType)}
-            className={`w-full h-10 md:h-10 pl-9 md:pl-10 pr-7 md:pr-8 rounded-full border font-medium text-sm md:text-base focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
+            className={`w-full ${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
           >
             {CHARTER_TYPES.map((type) => (
               <option key={type.value} value={type.value}>
@@ -129,7 +152,7 @@ export default function SearchBar({
 
         <Button
           onClick={handleSearch}
-          className={`h-10 md:h-10 px-3 md:px-4 rounded-full font-semibold text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] ${
+          className={`${buttonHeights} px-3 md:px-4 rounded-full font-semibold ${buttonFontSize} transition-all hover:scale-[1.02] active:scale-[0.98] ${
             isHero
               ? "bg-white/90 text-slate-900 hover:bg-white"
               : "bg-slate-900 text-white hover:bg-slate-800"

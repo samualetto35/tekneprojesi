@@ -63,7 +63,7 @@ function ListingSection({
   if (boats.length === 0) return null;
 
   return (
-    <section className={`py-10 ${bgColor}`}>
+    <section className={`py-6 ${bgColor}`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
@@ -108,7 +108,7 @@ export default async function Home() {
         <div className="relative z-10 flex items-center justify-center h-[52vh] min-h-[420px] max-h-[620px] px-4">
           <div className="text-center w-full max-w-4xl mx-auto space-y-6">
             <div className="space-y-3">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white tracking-tight">
                 Hayalindeki Yatı Bul
               </h1>
               <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">

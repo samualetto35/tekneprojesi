@@ -12,9 +12,10 @@ const OPTIONS = [
 
 interface SortSelectProps {
   defaultValue?: string;
+  className?: string;
 }
 
-export default function SortSelect({ defaultValue = "popular" }: SortSelectProps) {
+export default function SortSelect({ defaultValue = "popular", className = "" }: SortSelectProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -35,7 +36,7 @@ export default function SortSelect({ defaultValue = "popular" }: SortSelectProps
     <select
       value={current}
       onChange={(e) => handleChange(e.target.value)}
-      className="h-10 rounded-full border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
+      className={`h-8 rounded-2xl md:rounded-xl border border-slate-200 bg-white px-2.5 text-[11px] sm:text-xs font-semibold text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 ${className}`}
     >
       {OPTIONS.map((opt) => (
         <option key={opt.value} value={opt.value}>
