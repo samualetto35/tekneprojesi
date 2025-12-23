@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { BoatCard } from "@/components/BoatCard";
 import SearchBar from "@/components/SearchBar";
+import ScrollToTopOnMount from "@/components/ScrollToTopOnMount";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Moon } from "lucide-react";
 
@@ -98,6 +99,7 @@ export default async function YachtsPage({
 
   return (
     <main className="min-h-screen bg-slate-50">
+      <ScrollToTopOnMount />
       <section className="bg-white border-b">
         <div className="container mx-auto px-4 py-5">
           <SearchBar
