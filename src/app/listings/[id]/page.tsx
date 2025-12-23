@@ -6,15 +6,16 @@ import BookingForm from "@/components/BookingForm";
 import BackButton from "@/components/BackButton";
 
 // Sayfa params ve searchParams ile ID ve type'ı alır
+// Next.js 16'da bu değerler Promise olarak geliyor, bu nedenle önce await ile çözülüyor.
 export default async function ListingDetail({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams?: { type?: string };
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ type?: string }>;
 }) {
-  const { id } = params;
-  const type = searchParams?.type;
+  const { id } = await params;
+  const { type } = await searchParams;
   
   const { data: boat } = await supabase
     .from('listings')
@@ -22,7 +23,20 @@ export default async function ListingDetail({
     .eq('id', id)
     .single();
 
-  if (!boat) return notFound();
+  if (!boat) {
+    // Ürün bulunamazsa framework 404'ü yerine sade bir bilgi ekranı göster
+    // Böylece olası veri/ID uyuşmazlıkları kullanıcı için daha anlaşılır olur.
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="max-w-md text-center space-y-4">
+          <h1 className="text-2xl font-bold text-slate-900">İlan bulunamadı</h1>
+          <p className="text-slate-500 text-sm">
+            Görüntülemek istediğiniz tekne ilanı kaldırılmış veya artık aktif değil.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Aktif kiralama türlerini ve fiyatlarını hazırla
   const charterOptions = {

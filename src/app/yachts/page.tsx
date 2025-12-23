@@ -139,9 +139,10 @@ export default async function YachtsPage({
   return (
     <main className="min-h-screen bg-slate-50">
       <ScrollToTopOnMount />
-      <section className="bg-white border-b">
-        <div className="container mx-auto px-4 py-5">
-          <div className="hidden md:block">
+      <section className="bg-white border-b relative">
+        <div className="container mx-auto px-4 pt-3 pb-5 md:pt-0 md:pb-5">
+          {/* Desktop: search bar'ı header'ın içine taşınmış gibi göstermek için negatif margin */}
+          <div className="hidden md:block md:-mt-14 md:mb-1 relative z-40">
             <SearchBar
               locations={locations}
               defaultLocation={locationFilter}
@@ -150,6 +151,7 @@ export default async function YachtsPage({
               size="compact"
             />
           </div>
+          {/* Mobile: normal akışta kalsın */}
           <div className="md:hidden">
             <SearchBar
               locations={locations}
