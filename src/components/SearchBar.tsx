@@ -130,6 +130,16 @@ export default function SearchBar({
             options={CHARTER_TYPES.map(({ value, label }) => ({ value, label }))}
             className="w-full"
             buttonClassName={`${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} ${inputStyle} ${isHero ? "bg-white/10" : ""} pl-8 md:pl-10`}
+            renderLabel={(opt) => {
+              const meta = CHARTER_TYPES.find((t) => t.value === opt.value) || CHARTER_TYPES[0];
+              const Icon = meta.icon || Search;
+              return (
+                <span className="flex items-center gap-1.5">
+                  <Icon className="w-4 h-4 md:w-4 md:h-4" />
+                  <span>{opt.label}</span>
+                </span>
+              );
+            }}
           />
         </div>
 
