@@ -141,6 +141,15 @@ export default async function YachtsPage({
       <ScrollToTopOnMount />
       <section className="bg-white border-b">
         <div className="container mx-auto px-4 py-5">
+          <div className="hidden md:block">
+            <SearchBar
+              locations={locations}
+              defaultLocation={locationFilter}
+              defaultType={rentalType}
+              variant="default"
+              size="compact"
+            />
+          </div>
           <div className="md:hidden">
             <SearchBar
               locations={locations}
