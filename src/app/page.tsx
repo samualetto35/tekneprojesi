@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { ArrowRight, Calendar, Clock, Moon } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BoatCard } from "@/components/BoatCard";
 import SearchBar from "@/components/SearchBar";
@@ -49,14 +49,12 @@ async function getActiveLocations() {
 
 function ListingSection({
   title,
-  icon: Icon,
   boats,
   priceType,
   bgColor,
   linkHref,
 }: {
   title: string;
-  icon: any;
   boats: any[];
   priceType: "hourly" | "daily" | "stay";
   bgColor: string;
@@ -65,15 +63,10 @@ function ListingSection({
   if (boats.length === 0) return null;
 
   return (
-    <section className={`py-16 ${bgColor}`}>
+    <section className={`py-10 ${bgColor}`}>
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-slate-900 rounded-xl">
-              <Icon className="w-5 h-5 text-white" />
-            </div>
-            <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
-          </div>
+          <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
           <Link href={linkHref}>
             <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
               Tümünü Gör <ArrowRight className="w-4 h-4 ml-1" />
@@ -130,7 +123,6 @@ export default async function Home() {
 
       <ListingSection
         title="Saatlik Kiralık Yatlar"
-        icon={Clock}
         boats={hourlyListings}
         priceType="hourly"
         bgColor="bg-white"
@@ -139,7 +131,6 @@ export default async function Home() {
 
       <ListingSection
         title="Günlük Kiralık Yatlar"
-        icon={Calendar}
         boats={dailyListings}
         priceType="daily"
         bgColor="bg-slate-50"
@@ -148,7 +139,6 @@ export default async function Home() {
 
       <ListingSection
         title="Konaklamalı Yatlar"
-        icon={Moon}
         boats={stayListings}
         priceType="stay"
         bgColor="bg-white"

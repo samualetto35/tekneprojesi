@@ -82,7 +82,7 @@ export default function SearchBar({
           <select
             value={location}
             onChange={(e) => setLocation(e.target.value)}
-            className={`w-full h-10 md:h-11 pl-9 md:pl-10 pr-7 md:pr-8 rounded-full border font-medium text-sm md:text-base focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
+            className={`w-full h-10 md:h-10 pl-9 md:pl-10 pr-7 md:pr-8 rounded-full border font-medium text-sm md:text-base focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
           >
             {locationOptions.map((loc) => (
               <option key={loc.value} value={loc.value}>
@@ -112,7 +112,7 @@ export default function SearchBar({
           <select
             value={charterType}
             onChange={(e) => setCharterType(e.target.value as CharterType)}
-            className={`w-full h-10 md:h-11 pl-9 md:pl-10 pr-7 md:pr-8 rounded-full border font-medium text-sm md:text-base focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
+            className={`w-full h-10 md:h-10 pl-9 md:pl-10 pr-7 md:pr-8 rounded-full border font-medium text-sm md:text-base focus:ring-2 focus:outline-none transition-all appearance-none cursor-pointer ${inputStyle} ${isHero ? "bg-white/10" : ""}`}
           >
             {CHARTER_TYPES.map((type) => (
               <option key={type.value} value={type.value}>
@@ -129,7 +129,7 @@ export default function SearchBar({
 
         <Button
           onClick={handleSearch}
-          className={`h-10 md:h-11 px-3 md:px-4 rounded-full font-semibold text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] ${
+          className={`h-10 md:h-10 px-3 md:px-4 rounded-full font-semibold text-sm md:text-base transition-all hover:scale-[1.02] active:scale-[0.98] ${
             isHero
               ? "bg-white/90 text-slate-900 hover:bg-white"
               : "bg-slate-900 text-white hover:bg-slate-800"
