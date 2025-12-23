@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase";
 import { BoatCard } from "@/components/BoatCard";
 import SearchBar from "@/components/SearchBar";
 import ScrollToTopOnMount from "@/components/ScrollToTopOnMount";
+import SortSelect from "@/components/SortSelect";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Moon } from "lucide-react";
 
@@ -26,6 +27,8 @@ type SearchParams =
       [key: string]: string | string[] | undefined;
     }
   | undefined;
+
+type SortKey = "popular" | "price_asc" | "price_desc" | "capacity_desc";
 
 async function getListings(filters: { location?: string; type?: string }) {
   const { location, type } = filters;
@@ -72,6 +75,33 @@ async function getListings(filters: { location?: string; type?: string }) {
   return normalized;
 }
 
+function sortListings(listings: any[], sortKey: SortKey, priceType: "hourly" | "daily" | "stay") {
+  const withPrice = listings.map((item) => {
+    const priceFieldMap: Record<typeof priceType, string> = {
+      hourly: "price_hourly",
+      daily: "price_daily",
+      stay: "price_stay_per_night",
+    };
+    const raw =
+      priceType === "daily"
+        ? item?.[priceFieldMap[priceType]] ?? item?.price
+        : item?.[priceFieldMap[priceType]];
+    const priceVal = typeof raw === "number" ? raw : Number(raw || 0);
+    return { ...item, __price: priceVal };
+  });
+
+  switch (sortKey) {
+    case "price_asc":
+      return [...withPrice].sort((a, b) => a.__price - b.__price);
+    case "price_desc":
+      return [...withPrice].sort((a, b) => b.__price - a.__price);
+    case "capacity_desc":
+      return [...withPrice].sort((a, b) => (b.capacity || 0) - (a.capacity || 0));
+    default:
+      return listings;
+  }
+}
+
 export default async function YachtsPage({
   searchParams,
 }: {
@@ -89,13 +119,22 @@ export default async function YachtsPage({
     rentalTypeNormalized === "hourly" || rentalTypeNormalized === "daily" || rentalTypeNormalized === "stay"
       ? rentalTypeNormalized
       : "";
+  const sortParamRaw = typeof resolvedSearchParams?.sort === "string" ? resolvedSearchParams.sort : "";
+  const sortKey: SortKey =
+    sortParamRaw === "price_asc" || sortParamRaw === "price_desc" || sortParamRaw === "capacity_desc"
+      ? sortParamRaw
+      : "popular";
 
-  const [listings, locations] = await Promise.all([
+  const [listingsRaw, locations] = await Promise.all([
     getListings({ location: locationFilter, type: rentalType }),
     getActiveLocations(),
   ]);
 
   const priceType: "hourly" | "daily" | "stay" = rentalType || "daily";
+  const listings = sortListings(listingsRaw, sortKey, priceType);
+  const listingsCount = listings.length;
+  const titleText = `${locationFilter || "Türkiye"} için Tekneler`;
+  const breadcrumbText = locationFilter ? locationFilter : "Lokasyon Seçin";
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -140,6 +179,20 @@ export default async function YachtsPage({
               </svg>
               <span>Aramayı Kaydet</span>
             </button>
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3">
+            <div className="text-sm text-slate-500">Tekneler &gt; {breadcrumbText}</div>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-900">{titleText}</h1>
+                <p className="text-sm text-slate-500 mt-1">{listingsCount} ilan</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-slate-500">Sırala:</span>
+                <SortSelect defaultValue={sortKey} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
