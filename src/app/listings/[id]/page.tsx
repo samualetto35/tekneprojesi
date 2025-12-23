@@ -61,7 +61,7 @@ export default async function ListingDetail({
   return (
     <div className="min-h-screen bg-white pb-20">
       {/* ÜST NAVİGASYON */}
-      <div className="absolute top-0 left-0 right-0 z-20 p-4">
+      <div className="absolute top-0 left-0 right-0 z-40 p-4">
         <div className="container mx-auto flex items-center justify-between">
           <BackButton />
         </div>

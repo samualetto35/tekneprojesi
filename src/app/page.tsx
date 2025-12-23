@@ -1,125 +1,85 @@
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Calendar, Clock, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Users, Clock, Calendar, Moon } from "lucide-react";
+import { BoatCard } from "@/components/BoatCard";
+import SearchBar from "@/components/SearchBar";
 
-// Veri çekme fonksiyonları (Server Side)
 async function getHourlyListings() {
   const { data } = await supabase
-    .from('listings')
-    .select('*')
-    .eq('is_active', true)
-    .eq('is_hourly_active', true);
+    .from("listings")
+    .select("*")
+    .eq("is_active", true)
+    .eq("is_hourly_active", true)
+    .limit(3);
   return data || [];
 }
 
 async function getDailyListings() {
   const { data } = await supabase
-    .from('listings')
-    .select('*')
-    .eq('is_active', true)
-    .eq('is_daily_active', true);
+    .from("listings")
+    .select("*")
+    .eq("is_active", true)
+    .eq("is_daily_active", true)
+    .limit(3);
   return data || [];
 }
 
 async function getStayListings() {
   const { data } = await supabase
-    .from('listings')
-    .select('*')
-    .eq('is_active', true)
-    .eq('is_stay_active', true);
+    .from("listings")
+    .select("*")
+    .eq("is_active", true)
+    .eq("is_stay_active", true)
+    .limit(3);
   return data || [];
 }
 
-// Tekne Kartı Bileşeni
-function BoatCard({ 
-  boat, 
-  priceType 
-}: { 
-  boat: any; 
-  priceType: 'hourly' | 'daily' | 'stay' 
-}) {
-  const getPrice = () => {
-    switch (priceType) {
-      case 'hourly': return boat.price_hourly || 0;
-      case 'daily': return boat.price_daily || boat.price || 0;
-      case 'stay': return boat.price_stay || 0;
-    }
-  };
+async function getActiveLocations() {
+  const { data } = await supabase
+    .from("listings")
+    .select("location")
+    .eq("is_active", true);
 
-  const getPriceLabel = () => {
-    switch (priceType) {
-      case 'hourly': return '/ saat';
-      case 'daily': return '/ gün';
-      case 'stay': return '/ gece';
-    }
-  };
-
-  return (
-    <Link href={`/listings/${boat.id}?type=${priceType}`} className="block">
-      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group pt-0 cursor-pointer hover:-translate-y-1">
-        {/* Resim Alanı */}
-        <div className="h-56 bg-gray-200 relative overflow-hidden">
-          <img 
-            src={boat.image_urls?.[0] || "https://via.placeholder.com/400"} 
-            alt={boat.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <Badge className="absolute top-4 right-4 bg-black/70">
-            {boat.capacity} Kişilik
-          </Badge>
-        </div>
-
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">{boat.title}</CardTitle>
-          <div className="flex items-center text-slate-500 text-sm">
-            <MapPin className="w-4 h-4 mr-1" /> {boat.location}
-          </div>
-        </CardHeader>
-
-        <CardFooter className="flex justify-between items-center border-t pt-4 bg-slate-50">
-          <div>
-            <span className="text-xl font-bold text-slate-900">
-              {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(getPrice())}
-            </span>
-            <span className="text-xs text-slate-500 ml-1">{getPriceLabel()}</span>
-          </div>
-          <Button size="sm">Detay Gör</Button>
-        </CardFooter>
-      </Card>
-    </Link>
+  const unique = Array.from(
+    new Set((data || []).map((item) => item.location).filter(Boolean) as string[])
   );
+  return unique;
 }
 
-// Bölüm Bileşeni
-function ListingSection({ 
-  title, 
-  icon: Icon, 
-  boats, 
+function ListingSection({
+  title,
+  icon: Icon,
+  boats,
   priceType,
-  bgColor 
-}: { 
-  title: string; 
+  bgColor,
+  linkHref,
+}: {
+  title: string;
   icon: any;
-  boats: any[]; 
-  priceType: 'hourly' | 'daily' | 'stay';
+  boats: any[];
+  priceType: "hourly" | "daily" | "stay";
   bgColor: string;
+  linkHref: string;
 }) {
   if (boats.length === 0) return null;
 
   return (
     <section className={`py-16 ${bgColor}`}>
       <div className="container mx-auto px-4">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 bg-blue-900 rounded-lg">
-            <Icon className="w-6 h-6 text-white" />
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-slate-900 rounded-xl">
+              <Icon className="w-5 h-5 text-white" />
+            </div>
+            <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
           </div>
-          <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
-          <Badge variant="secondary" className="ml-2">{boats.length} Tekne</Badge>
+          <Link href={linkHref}>
+            <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
+              Tümünü Gör <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </Link>
         </div>
-        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {boats.map((boat) => (
             <BoatCard key={boat.id} boat={boat} priceType={priceType} />
@@ -131,88 +91,89 @@ function ListingSection({
 }
 
 export default async function Home() {
-  const [hourlyListings, dailyListings, stayListings] = await Promise.all([
+  const [hourlyListings, dailyListings, stayListings, locations] = await Promise.all([
     getHourlyListings(),
     getDailyListings(),
-    getStayListings()
+    getStayListings(),
+    getActiveLocations(),
   ]);
 
   return (
     <main className="min-h-screen bg-slate-50">
       {/* HERO SECTION */}
-      <section className="relative h-[60vh] flex items-center justify-center bg-slate-900 text-white">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-40"
-          style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1567899378494-47b22a2ae96a?q=80&w=2070")' }}
-        />
-        <div className="relative z-10 text-center px-4">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">Lüksü Keşfet.</h1>
-          <p className="text-xl mb-8 text-white/90">İstanbul ve Bodrum&apos;un en özel yatları.</p>
-          <div className="flex flex-wrap justify-center gap-4">
-            {hourlyListings.length > 0 && (
-              <a href="#saatlik">
-                <Button size="lg" variant="outline" className="bg-white/10 border-white/30 hover:bg-white/20 text-white">
-                  <Clock className="w-4 h-4 mr-2" /> Saatlik Kirala
-                </Button>
-              </a>
-            )}
-            {dailyListings.length > 0 && (
-              <a href="#gunluk">
-                <Button size="lg" variant="outline" className="bg-white/10 border-white/30 hover:bg-white/20 text-white">
-                  <Calendar className="w-4 h-4 mr-2" /> Günlük Kirala
-                </Button>
-              </a>
-            )}
-            {stayListings.length > 0 && (
-              <a href="#konaklama">
-                <Button size="lg" variant="outline" className="bg-white/10 border-white/30 hover:bg-white/20 text-white">
-                  <Moon className="w-4 h-4 mr-2" /> Konaklamalı
-                </Button>
-              </a>
-            )}
+      <section className="relative bg-white">
+        <div className="absolute inset-0 h-[52vh] min-h-[420px] max-h-[620px]">
+          <div className="absolute inset-0 rounded-b-3xl overflow-hidden">
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: 'url("/hero.png")' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 via-slate-900/30 to-slate-900/70" />
+          </div>
+        </div>
+
+        <div className="relative z-10 flex items-center justify-center h-[52vh] min-h-[420px] max-h-[620px] px-4">
+          <div className="text-center w-full max-w-4xl mx-auto space-y-6">
+            <div className="space-y-3">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white tracking-tight">
+                Hayalindeki Yatı Bul
+              </h1>
+              <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
+                İstanbul, Bodrum ve Türkiye&apos;nin en güzel koylarında unutulmaz bir deniz deneyimi
+              </p>
+            </div>
+
+            <SearchBar locations={locations} variant="hero" />
           </div>
         </div>
       </section>
 
-      {/* SAATLİK TEKNELERİ */}
-      <div id="saatlik">
-        <ListingSection 
-          title="Öne Çıkan Saatlik Tekneler" 
-          icon={Clock}
-          boats={hourlyListings} 
-          priceType="hourly"
-          bgColor="bg-white"
-        />
-      </div>
+      <ListingSection
+        title="Saatlik Kiralık Yatlar"
+        icon={Clock}
+        boats={hourlyListings}
+        priceType="hourly"
+        bgColor="bg-white"
+        linkHref="/yachts?type=hourly"
+      />
 
-      {/* GÜNLÜK TEKNELER */}
-      <div id="gunluk">
-        <ListingSection 
-          title="Öne Çıkan Günlük Tekneler" 
-          icon={Calendar}
-          boats={dailyListings} 
-          priceType="daily"
-          bgColor="bg-slate-50"
-        />
-      </div>
+      <ListingSection
+        title="Günlük Kiralık Yatlar"
+        icon={Calendar}
+        boats={dailyListings}
+        priceType="daily"
+        bgColor="bg-slate-50"
+        linkHref="/yachts?type=daily"
+      />
 
-      {/* KONAKLAMALI TEKNELER */}
-      <div id="konaklama">
-        <ListingSection 
-          title="Öne Çıkan Konaklamalı Tekneler" 
-          icon={Moon}
-          boats={stayListings} 
-          priceType="stay"
-          bgColor="bg-white"
-        />
-      </div>
+      <ListingSection
+        title="Konaklamalı Yatlar"
+        icon={Moon}
+        boats={stayListings}
+        priceType="stay"
+        bgColor="bg-white"
+        linkHref="/yachts?type=stay"
+      />
 
-      {/* Hiç tekne yoksa */}
       {hourlyListings.length === 0 && dailyListings.length === 0 && stayListings.length === 0 && (
         <section className="py-20 text-center">
           <p className="text-gray-500 text-lg">Henüz aktif tekne bulunmamaktadır.</p>
         </section>
       )}
+
+      <section className="py-20 bg-slate-900 text-white text-center">
+        <div className="container mx-auto px-4">
+          <h2 className="text-3xl font-bold mb-4">Aradığınızı Bulamadınız mı?</h2>
+          <p className="text-slate-300 mb-8 max-w-xl mx-auto">
+            Tüm yat seçeneklerimizi inceleyin veya size özel teklifler için bizimle iletişime geçin.
+          </p>
+          <Link href="/yachts">
+            <Button size="lg" className="bg-white text-slate-900 hover:bg-slate-100">
+              Tüm Yatları Keşfet <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }
