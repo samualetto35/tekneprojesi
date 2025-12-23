@@ -6,15 +6,15 @@ import BookingForm from "@/components/BookingForm";
 import BackButton from "@/components/BackButton";
 
 // Sayfa params ve searchParams ile ID ve type'ı alır
-export default async function ListingDetail({ 
-  params, 
-  searchParams 
-}: { 
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ type?: string }>;
+export default async function ListingDetail({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams?: { type?: string };
 }) {
-  const { id } = await params;
-  const { type } = await searchParams;
+  const { id } = params;
+  const type = searchParams?.type;
   
   const { data: boat } = await supabase
     .from('listings')
