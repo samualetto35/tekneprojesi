@@ -72,8 +72,16 @@ export default async function AdminPage() {
     if (leadCountsByListing[lead.listing_id]) {
       const status = lead.status || "new";
       const counts = leadCountsByListing[lead.listing_id];
-      if (status === "new" || status === "contacted" || status === "confirmed" || status === "cancelled" || status === "completed") {
-        counts[status]++;
+      if (status === "new") {
+        counts.new++;
+      } else if (status === "contacted") {
+        counts.contacted++;
+      } else if (status === "confirmed") {
+        counts.confirmed++;
+      } else if (status === "cancelled") {
+        counts.cancelled++;
+      } else if (status === "completed") {
+        counts.completed++;
       }
       counts.total++;
     }
