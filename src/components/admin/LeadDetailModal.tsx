@@ -28,7 +28,7 @@ interface Lead {
     id: string;
     title: string;
     location: string;
-    capacity: number;
+    capacity?: number;
     captain_name?: string;
     captain_phone?: string;
     captain_email?: string;
