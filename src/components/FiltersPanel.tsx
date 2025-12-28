@@ -63,7 +63,7 @@ export default function FiltersPanel({
   const priceField = priceFieldMap[priceType];
   const prices = listings
     .map((item) => {
-      const price = item[priceField] || (priceType === "daily" ? item.price : 0);
+      const price = item[priceField] || 0;
       return typeof price === "number" ? price : Number(price || 0);
     })
     .filter((p) => p > 0);
@@ -522,7 +522,7 @@ export function filterListings(listings: any[], filters: FilterState, priceType:
     }
 
     // Price filter
-    const price = item[priceField] || (priceType === "daily" ? item.price : 0);
+    const price = item[priceField] || 0;
     const priceValue = typeof price === "number" ? price : Number(price || 0);
     if (filters.minPrice && priceValue < Number(filters.minPrice)) return false;
     if (filters.maxPrice && priceValue > Number(filters.maxPrice)) return false;

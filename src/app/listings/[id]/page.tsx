@@ -48,7 +48,7 @@ export default async function ListingDetail({
     },
     daily: {
       active: boat.is_daily_active || false,
-      price: boat.price_daily || boat.price || 0,
+      price: boat.price_daily || 0,
       label: "Günübirlik Kiralama"
     },
     stay: {

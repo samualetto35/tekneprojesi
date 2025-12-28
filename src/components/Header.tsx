@@ -10,6 +10,7 @@ interface HeaderProps {
 export default function Header({ transparent = false }: HeaderProps) {
   const pathname = usePathname();
   if (pathname?.startsWith("/listings/")) return null;
+  if (pathname?.startsWith("/admin")) return null;
 
   const isHome = pathname === "/";
   const showTransparent = transparent || isHome;

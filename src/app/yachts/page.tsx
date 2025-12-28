@@ -64,8 +64,7 @@ async function getListings(filters: { location?: string; type?: string }) {
   if (type && typeColumnMap[type]) {
     return normalized.filter((item) => {
       const priceField = priceColumnMap[type];
-      const rawPrice =
-        type === "daily" ? item?.[priceField] ?? item?.price : item?.[priceField];
+      const rawPrice = item?.[priceField];
       const priceValue = typeof rawPrice === "number" ? rawPrice : Number(rawPrice || 0);
 
       // Extra guard: only keep listings that are truly active for the chosen type and have a price
@@ -83,10 +82,7 @@ function sortListings(listings: any[], sortKey: SortKey, priceType: "hourly" | "
       daily: "price_daily",
       stay: "price_stay_per_night",
     };
-    const raw =
-      priceType === "daily"
-        ? item?.[priceFieldMap[priceType]] ?? item?.price
-        : item?.[priceFieldMap[priceType]];
+    const raw = item?.[priceFieldMap[priceType]];
     const priceVal = typeof raw === "number" ? raw : Number(raw || 0);
     return { ...item, __price: priceVal };
   });
@@ -155,7 +151,7 @@ export default async function YachtsPage({
     filteredListings = listingsRaw.filter((item) => {
       // Price filter
       if (minPrice || maxPrice) {
-        const price = item[priceField] || (priceType === "daily" ? item.price : 0);
+        const price = item[priceField] || 0;
         const priceValue = typeof price === "number" ? price : Number(price || 0);
         if (minPrice && priceValue < Number(minPrice)) return false;
         if (maxPrice && priceValue > Number(maxPrice)) return false;

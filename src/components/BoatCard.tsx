@@ -19,7 +19,7 @@ export function BoatCard({ boat, priceType }: BoatCardProps) {
       case "hourly":
         return boat.price_hourly || 0;
       case "daily":
-        return boat.price_daily || boat.price || 0;
+        return boat.price_daily || 0;
       case "stay":
         return boat.price_stay_per_night || 0;
     }
