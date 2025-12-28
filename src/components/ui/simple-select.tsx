@@ -51,6 +51,54 @@ export function SimpleSelect({
     setOpen(false);
   };
 
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [triggerWidth, setTriggerWidth] = useState<number | undefined>(undefined);
+
+  // Get trigger width
+  useEffect(() => {
+    const updateWidth = () => {
+      if (ref.current) {
+        const width = ref.current.getBoundingClientRect().width;
+        setTriggerWidth(width);
+      }
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
+  }, []);
+
+  // Position menu properly (avoid overflow)
+  useEffect(() => {
+    if (open && ref.current && menuRef.current) {
+      const rect = ref.current.getBoundingClientRect();
+      const menu = menuRef.current;
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      // Reset classes and styles
+      menu.classList.remove("bottom-full", "mb-1", "mt-1", "right-0", "left-0");
+      menu.style.left = "";
+      menu.style.right = "";
+      
+      // Check horizontal overflow - if menu would exceed viewport width, align to right
+      const menuWidth = triggerWidth ? Math.max(triggerWidth, 280) : 280;
+      if (rect.left + menuWidth > viewportWidth - 16) {
+        menu.classList.add("right-0");
+      } else {
+        menu.classList.add("left-0");
+      }
+      
+      // Check if there's enough space below, otherwise show above
+      if (spaceBelow < 250 && spaceAbove > spaceBelow) {
+        menu.classList.add("bottom-full", "mb-1");
+      } else {
+        menu.classList.add("mt-1");
+      }
+    }
+  }, [open, triggerWidth]);
+
   return (
     <div ref={ref} className={cn("relative w-full", className)}>
       <button
@@ -69,7 +117,7 @@ export function SimpleSelect({
             : placeholder}
         </span>
         <svg
-          className="ml-2 h-3.5 w-3.5 text-slate-400"
+          className="ml-2 h-3.5 w-3.5 text-slate-400 shrink-0"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -80,10 +128,16 @@ export function SimpleSelect({
 
       {open && (
         <div
+          ref={menuRef}
           className={cn(
-            "absolute z-50 mt-1 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg max-h-64 overflow-y-auto",
+            "absolute z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl max-h-[320px] overflow-y-auto",
             menuClassName
           )}
+          style={{
+            width: triggerWidth ? `${Math.max(triggerWidth, 280)}px` : "100%",
+            minWidth: "280px",
+            maxWidth: "calc(100vw - 2rem)",
+          }}
         >
           {options.map((opt) => {
             const isSelected = opt.value === value;
@@ -93,8 +147,8 @@ export function SimpleSelect({
                 type="button"
                 onClick={() => handleSelect(opt.value)}
                 className={cn(
-                  "block w-full px-3 py-2 text-left text-sm hover:bg-slate-50",
-                  isSelected && "bg-slate-100 font-semibold"
+                  "block w-full px-4 py-2.5 text-left text-sm hover:bg-slate-50 transition-colors",
+                  isSelected && "bg-blue-50 text-blue-900 font-semibold"
                 )}
               >
                 {renderLabel ? renderLabel(opt, isSelected) : opt.label}

@@ -3,6 +3,7 @@ import { BoatCard } from "@/components/BoatCard";
 import SearchBar from "@/components/SearchBar";
 import ScrollToTopOnMount from "@/components/ScrollToTopOnMount";
 import SortSelect from "@/components/SortSelect";
+import { FiltersButton } from "@/components/FiltersPanel";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Moon } from "lucide-react";
 
@@ -125,13 +126,54 @@ export default async function YachtsPage({
       ? sortParamRaw
       : "popular";
 
+  // Get filter params
+  const minPrice = typeof resolvedSearchParams?.minPrice === "string" ? resolvedSearchParams.minPrice : "";
+  const maxPrice = typeof resolvedSearchParams?.maxPrice === "string" ? resolvedSearchParams.maxPrice : "";
+  const hasCaptain = typeof resolvedSearchParams?.hasCaptain === "string" 
+    ? resolvedSearchParams.hasCaptain === "true" 
+    : null;
+  const minCapacity = typeof resolvedSearchParams?.minCapacity === "string" ? resolvedSearchParams.minCapacity : "";
+  const maxCapacity = typeof resolvedSearchParams?.maxCapacity === "string" ? resolvedSearchParams.maxCapacity : "";
+
   const [listingsRaw, locations] = await Promise.all([
     getListings({ location: locationFilter, type: rentalType }),
     getActiveLocations(),
   ]);
 
   const priceType: "hourly" | "daily" | "stay" = rentalType || "daily";
-  const listings = sortListings(listingsRaw, sortKey, priceType);
+  
+  // Apply additional filters
+  let filteredListings = listingsRaw;
+  const priceFieldMap: Record<typeof priceType, string> = {
+    hourly: "price_hourly",
+    daily: "price_daily",
+    stay: "price_stay_per_night",
+  };
+  const priceField = priceFieldMap[priceType];
+  
+  if (minPrice || maxPrice || hasCaptain !== null || minCapacity || maxCapacity) {
+    filteredListings = listingsRaw.filter((item) => {
+      // Price filter
+      if (minPrice || maxPrice) {
+        const price = item[priceField] || (priceType === "daily" ? item.price : 0);
+        const priceValue = typeof price === "number" ? price : Number(price || 0);
+        if (minPrice && priceValue < Number(minPrice)) return false;
+        if (maxPrice && priceValue > Number(maxPrice)) return false;
+      }
+      
+      // Captain filter
+      if (hasCaptain !== null && item.has_captain !== hasCaptain) return false;
+      
+      // Capacity filter
+      const capacity = item.capacity || 0;
+      if (minCapacity && capacity < Number(minCapacity)) return false;
+      if (maxCapacity && capacity > Number(maxCapacity)) return false;
+      
+      return true;
+    });
+  }
+  
+  const listings = sortListings(filteredListings, sortKey, priceType);
   const listingsCount = listings.length;
   const titleText = `${locationFilter || "Türkiye"} için Tekneler`;
   const breadcrumbText = locationFilter ? locationFilter : "Lokasyon Seçin";
@@ -164,7 +206,7 @@ export default async function YachtsPage({
             />
           </div>
           <div className="mt-4 flex flex-row items-center gap-2">
-            <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50">
+            <button className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M3 5h18" />
                 <path d="M5 12h14" />
@@ -172,21 +214,8 @@ export default async function YachtsPage({
               </svg>
               <span>Harita</span>
             </button>
-            <button className="flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 21v-7" />
-                <path d="M4 10V3" />
-                <path d="M12 21v-9" />
-                <path d="M12 8V3" />
-                <path d="M20 21v-5" />
-                <path d="M20 12V3" />
-                <path d="M1 14h6" />
-                <path d="M9 8h6" />
-                <path d="M17 16h6" />
-              </svg>
-              <span>Filtreler</span>
-            </button>
-            <button className="flex items-center gap-2 rounded-full border border-[#0096a3] bg-white px-3 py-2 text-sm font-semibold text-[#007782] shadow-sm hover:bg-[#f1fbfc]">
+            <FiltersButton listings={listingsRaw} priceType={priceType} currentFilters={{ minPrice, maxPrice, hasCaptain, minCapacity, maxCapacity, type: rentalType }} />
+            <button className="flex items-center gap-2 rounded-full border border-[#0096a3] bg-white px-3 py-2 text-sm font-medium text-[#007782] shadow-sm hover:bg-[#f1fbfc]">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21H5a2 2 0 0 1-2-2V7" />
                 <path d="M14 3h7v7" />

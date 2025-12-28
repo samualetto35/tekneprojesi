@@ -5,20 +5,20 @@ import { useRouter } from "next/navigation";
 import { MapPin, Clock, Calendar, Moon, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SimpleSelect } from "@/components/ui/simple-select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
-type CharterType = "" | "hourly" | "daily" | "stay";
+type CharterType = "hourly" | "daily" | "stay";
 
 const CHARTER_TYPES: { value: CharterType; label: string; icon: typeof Search }[] = [
-  { value: "", label: "Tüm Türler", icon: Search },
   { value: "hourly", label: "Saatlik", icon: Clock },
-  { value: "daily", label: "Günlük", icon: Calendar },
+  { value: "daily", label: "Günübirlik", icon: Calendar },
   { value: "stay", label: "Konaklamalı", icon: Moon },
 ];
 
 interface SearchBarProps {
   locations: string[];
   defaultLocation?: string;
-  defaultType?: CharterType;
+  defaultType?: CharterType | "";
   variant?: "hero" | "default";
   fullWidthOnDesktop?: boolean;
   size?: "default" | "compact";
@@ -27,29 +27,31 @@ interface SearchBarProps {
 export default function SearchBar({
   locations,
   defaultLocation = "",
-  defaultType = "",
+  defaultType = "hourly",
   variant = "hero",
   fullWidthOnDesktop = false,
   size = "default",
 }: SearchBarProps) {
   const router = useRouter();
   const [location, setLocation] = useState(defaultLocation);
-  const [charterType, setCharterType] = useState<CharterType>(defaultType);
+  const [charterType, setCharterType] = useState<CharterType>(
+    (defaultType || "hourly") as CharterType
+  );
 
   useEffect(() => {
     setLocation(defaultLocation);
   }, [defaultLocation]);
 
   useEffect(() => {
-    setCharterType(defaultType);
+    setCharterType((defaultType || "hourly") as CharterType);
   }, [defaultType]);
 
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (location) params.set("location", location);
-    if (charterType) params.set("type", charterType);
+    params.set("type", charterType);
 
-    router.push(`/yachts${params.toString() ? `?${params.toString()}` : ""}`);
+    router.push(`/yachts?${params.toString()}`);
   };
 
   const locationOptions = useMemo(
@@ -100,28 +102,27 @@ export default function SearchBar({
         className={`${wrapperStyle} rounded-full ${outerPadding} flex flex-row flex-nowrap items-center gap-1`}
       >
         <div className="flex-1 min-w-0 relative">
-          <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${iconStyle}`}>
+          <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${iconStyle} z-10 pointer-events-none`}>
             <MapPin className="w-4 h-4 md:w-5 md:h-5" />
           </div>
-          <SimpleSelect
+          <SearchableSelect
             value={location}
             onChange={setLocation}
             options={locationOptions}
             className="w-full"
             buttonClassName={`${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} ${inputStyle} ${isHero ? "bg-white/10" : ""} pl-8 md:pl-10`}
+            searchPlaceholder="Lokasyon ara..."
           />
         </div>
 
         <div className="flex-1 min-w-0 relative">
-          <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${iconStyle}`}>
+          <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${iconStyle} z-10 pointer-events-none`}>
             {charterType === "hourly" ? (
               <Clock className="w-4 h-4 md:w-5 md:h-5" />
             ) : charterType === "daily" ? (
               <Calendar className="w-4 h-4 md:w-5 md:h-5" />
-            ) : charterType === "stay" ? (
-              <Moon className="w-4 h-4 md:w-5 md:h-5" />
             ) : (
-              <Search className="w-4 h-4 md:w-5 md:h-5" />
+              <Moon className="w-4 h-4 md:w-5 md:h-5" />
             )}
           </div>
           <SimpleSelect
@@ -131,8 +132,9 @@ export default function SearchBar({
             className="w-full"
             buttonClassName={`${controlHeights} ${controlPadding} rounded-full border font-medium ${controlFontSize} ${inputStyle} ${isHero ? "bg-white/10" : ""} pl-8 md:pl-10`}
             renderLabel={(opt) => {
-              const meta = CHARTER_TYPES.find((t) => t.value === opt.value) || CHARTER_TYPES[0];
-              const Icon = meta.icon || Search;
+              const meta = CHARTER_TYPES.find((t) => t.value === opt.value);
+              if (!meta) return opt.label;
+              const Icon = meta.icon;
               return (
                 <span className="flex items-center gap-1.5">
                   <Icon className="w-4 h-4 md:w-4 md:h-4" />
