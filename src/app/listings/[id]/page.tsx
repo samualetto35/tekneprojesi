@@ -101,82 +101,104 @@ export default async function ListingDetail({
         </div>
       </div>
 
-      <div className="container mx-auto mt-8 px-4 grid grid-cols-1 md:grid-cols-3 gap-12">
-        {/* SOL TARAF: BİLGİLER */}
-        <div className="md:col-span-2 space-y-8">
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Tekne Özellikleri</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center p-4 bg-slate-50 rounded-lg">
-                <Users className="w-6 h-6 mr-3 text-blue-600" />
-                <div>
-                  <p className="text-sm text-gray-500">Kapasite</p>
-                  <p className="font-semibold">{boat.capacity} Kişi</p>
+      <div className="container mx-auto mt-4 md:mt-6 px-4 sm:px-5 lg:px-6 max-w-7xl">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+          {/* SOL TARAF: BİLGİLER */}
+          <div className="lg:col-span-2 space-y-4">
+            {/* Tekne Özellikleri */}
+            <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4 lg:p-5">
+              <h2 className="text-xl lg:text-2xl font-bold mb-4 text-slate-900">Tekne Özellikleri</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex items-center p-3.5 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-lg border border-slate-200/50 hover:border-blue-300/50 transition-colors duration-200 group">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-500/20 transition-colors">
+                    <Users className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium mb-0.5">Kapasite</p>
+                    <p className="text-base font-bold text-slate-900">{boat.capacity} Kişi</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center p-4 bg-slate-50 rounded-lg">
-                <Anchor className="w-6 h-6 mr-3 text-blue-600" />
-                <div>
-                  <p className="text-sm text-gray-500">Kaptan</p>
-                  <p className="font-semibold">{boat.has_captain ? "Kaptanlı" : "Kaptansız"}</p>
+                <div className="flex items-center p-3.5 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-lg border border-slate-200/50 hover:border-blue-300/50 transition-colors duration-200 group">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-500/20 transition-colors">
+                    <Anchor className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 font-medium mb-0.5">Kaptan</p>
+                    <p className="text-base font-bold text-slate-900">{boat.has_captain ? "Kaptanlı" : "Kaptansız"}</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Açıklama</h2>
-            <p className="text-gray-600 leading-relaxed whitespace-pre-line">
-              {boat.description || "Bu tekne için henüz açıklama girilmemiş."}
-            </p>
-          </div>
+            
+            {/* Açıklama */}
+            <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4 lg:p-5">
+              <h2 className="text-xl lg:text-2xl font-bold mb-4 text-slate-900">Açıklama</h2>
+              <div className="prose prose-slate max-w-none">
+                <p className="text-slate-700 leading-relaxed text-sm lg:text-base whitespace-pre-line">
+                  {boat.description || "Bu tekne için henüz açıklama girilmemiş."}
+                </p>
+              </div>
+            </div>
 
-          {/* Fiyat Tablosu */}
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Fiyatlandırma</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {charterOptions.hourly.active && (
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                  <p className="text-sm text-blue-600 font-medium">Saatlik</p>
-                  <p className="text-2xl font-bold text-slate-900">
-                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.hourly.price)}
-                  </p>
-                  <p className="text-xs text-blue-500 mt-1">Min. {charterOptions.hourly.minHours} saat</p>
-                </div>
-              )}
-              {charterOptions.daily.active && (
-                <div className="p-4 bg-green-50 rounded-lg border border-green-100">
-                  <p className="text-sm text-green-600 font-medium">Günlük</p>
-                  <p className="text-2xl font-bold text-slate-900">
-                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.daily.price)}
-                  </p>
-                </div>
-              )}
-              {charterOptions.stay.active && (
-                <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                  <p className="text-sm text-purple-600 font-medium">Konaklamalı (Gecelik)</p>
-                  <p className="text-2xl font-bold text-slate-900">
-                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.stay.price)}
-                  </p>
-                  <p className="text-xs text-purple-500 mt-1">Min. {charterOptions.stay.minDays} gece</p>
-                </div>
-              )}
+            {/* Fiyatlandırma */}
+            <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4 lg:p-5">
+              <h2 className="text-xl lg:text-2xl font-bold mb-4 text-slate-900">Fiyatlandırma</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {charterOptions.hourly.active && (
+                  <div className="p-3.5 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg border-2 border-blue-200/60 hover:border-blue-300 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Saatlik</p>
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                    </div>
+                    <p className="text-xl lg:text-2xl font-bold text-slate-900 mb-1">
+                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.hourly.price)}
+                    </p>
+                    <p className="text-xs text-blue-600 font-medium">Min. {charterOptions.hourly.minHours} saat</p>
+                  </div>
+                )}
+                {charterOptions.daily.active && (
+                  <div className="p-3.5 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg border-2 border-emerald-200/60 hover:border-emerald-300 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Günlük</p>
+                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                    </div>
+                    <p className="text-xl lg:text-2xl font-bold text-slate-900 mb-1">
+                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.daily.price)}
+                    </p>
+                    <p className="text-xs text-emerald-600 font-medium">Günübirlik</p>
+                  </div>
+                )}
+                {charterOptions.stay.active && (
+                  <div className="p-3.5 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-lg border-2 border-purple-200/60 hover:border-purple-300 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Konaklamalı</p>
+                      <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                    </div>
+                    <p className="text-xl lg:text-2xl font-bold text-slate-900 mb-1">
+                      {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.stay.price)}
+                    </p>
+                    <p className="text-xs text-purple-600 font-medium">Min. {charterOptions.stay.minDays} gece (Gecelik)</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* SAĞ TARAF: FORM ALANI */}
-        <div className="md:col-span-1">
-          <BookingForm 
-            boatId={boat.id} 
-            boatName={boat.title} 
-            currency={boat.currency || 'TRY'}
-            charterOptions={charterOptions}
-            defaultCharterType={defaultCharterType}
-            ownerName={boat.captain_name}
-            ownerPhone={boat.captain_phone}
-            commissionRate={boat.commission_rate || 0}
-          />
+          {/* SAĞ TARAF: FORM ALANI */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-4 lg:top-6">
+              <BookingForm 
+                boatId={boat.id} 
+                boatName={boat.title} 
+                currency={boat.currency || 'TRY'}
+                charterOptions={charterOptions}
+                defaultCharterType={defaultCharterType}
+                ownerName={boat.captain_name}
+                ownerPhone={boat.captain_phone}
+                commissionRate={boat.commission_rate || 0}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

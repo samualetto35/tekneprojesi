@@ -211,10 +211,15 @@ export default function BookingForm({
 
   if (success) {
     return (
-      <div className="p-6 bg-green-50 border border-green-200 rounded-xl text-center sticky top-8">
-        <h3 className="text-xl font-bold text-green-800 mb-2">Talep Alındı! ✅</h3>
-        <p className="text-green-700">
-          Teşekkürler {name} Bey/Hanım. <br/>
+      <div className="p-4 lg:p-5 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl shadow-lg text-center">
+        <div className="mb-3">
+          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span className="text-2xl">✅</span>
+          </div>
+          <h3 className="text-lg lg:text-xl font-bold text-green-800 mb-2">Talep Alındı!</h3>
+        </div>
+        <p className="text-green-700 leading-relaxed text-xs lg:text-sm">
+          Teşekkürler {name} Bey/Hanım. <br className="hidden sm:block"/>
           Danışmanımız {phone} numarasından size 15 dakika içinde dönüş yapacaktır.
         </p>
       </div>
@@ -226,55 +231,57 @@ export default function BookingForm({
   
   if (!hasActiveOptions) {
     return (
-      <div className="border rounded-xl p-6 shadow-xl bg-white sticky top-8 text-center">
-        <p className="text-gray-500">Bu tekne için kiralama seçeneği bulunmamaktadır.</p>
+      <div className="border-2 border-slate-200 rounded-xl p-4 lg:p-5 shadow-lg bg-white text-center">
+        <p className="text-slate-500 text-xs lg:text-sm">Bu tekne için kiralama seçeneği bulunmamaktadır.</p>
       </div>
     );
   }
 
   return (
-    <div className="border rounded-xl p-6 shadow-xl bg-white sticky top-8">
+    <div className="border-2 border-slate-200/60 rounded-xl p-4 lg:p-5 shadow-xl bg-white">
       {/* Fiyat Özeti */}
-      <div className="mb-6 border-b pb-4">
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold text-slate-900">
+      <div className="mb-4 pb-4 border-b border-slate-200">
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <span className="text-2xl lg:text-3xl font-bold text-slate-900">
             {formatCurrency(priceCalculation.basePrice)}
           </span>
-          <span className="text-gray-500 text-sm">
+          <span className="text-slate-500 text-xs lg:text-sm font-medium">
             / {charterType === "hourly" ? "saat" : charterType === "daily" ? "gün" : "gece"}
           </span>
         </div>
         {priceCalculation.quantity > 1 && (
-          <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-            <div className="flex justify-between text-sm">
-              <span>{formatCurrency(priceCalculation.basePrice)} x {priceCalculation.quantity} {priceCalculation.unitLabel}</span>
-              <span className="font-semibold">{formatCurrency(priceCalculation.totalPrice)}</span>
+          <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+            <div className="flex justify-between items-center text-xs lg:text-sm">
+              <span className="text-slate-700 font-medium">
+                {formatCurrency(priceCalculation.basePrice)} × {priceCalculation.quantity} {priceCalculation.unitLabel}
+              </span>
+              <span className="font-bold text-slate-900">{formatCurrency(priceCalculation.totalPrice)}</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3.5">
         {/* 1. Kiralama Tipi */}
         <div className="space-y-2">
-          <Label>Kiralama Türü</Label>
+          <Label className="text-xs font-semibold text-slate-700">Kiralama Türü</Label>
           <Select onValueChange={(value) => setCharterType(value as CharterType)} value={charterType}>
-            <SelectTrigger>
+            <SelectTrigger className="w-full h-10 text-sm border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <SelectValue placeholder="Seçiniz" />
             </SelectTrigger>
             <SelectContent>
               {charterOptions.hourly.active && (
-                <SelectItem value="hourly">
+                <SelectItem value="hourly" className="text-sm">
                   Saatlik - {formatCurrency(charterOptions.hourly.price)}/saat
                 </SelectItem>
               )}
               {charterOptions.daily.active && (
-                <SelectItem value="daily">
+                <SelectItem value="daily" className="text-sm">
                   Günübirlik - {formatCurrency(charterOptions.daily.price)}
                 </SelectItem>
               )}
               {charterOptions.stay.active && (
-                <SelectItem value="stay">
+                <SelectItem value="stay" className="text-sm">
                   Konaklamalı - {formatCurrency(charterOptions.stay.price)}/gece
                 </SelectItem>
               )}
@@ -287,15 +294,15 @@ export default function BookingForm({
           <>
             {/* Saatlik: Gün + Saat Aralığı */}
             <div className="space-y-2 flex flex-col">
-              <Label>Tarih</Label>
+              <Label className="text-xs font-semibold text-slate-700">Tarih</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant={"outline"} className="justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP", { locale: tr }) : <span>Tarih Seçin</span>}
+                  <Button variant={"outline"} className="h-10 justify-start text-left font-normal text-sm border-slate-300 hover:bg-slate-50 hover:border-slate-400 focus:ring-2 focus:ring-blue-500">
+                    <CalendarIcon className="mr-2 h-3.5 w-3.5 text-slate-500" />
+                    {date ? format(date, "PPP", { locale: tr }) : <span className="text-slate-500">Tarih Seçin</span>}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
+                <PopoverContent className="w-auto p-0" align="start">
                   <Calendar 
                     mode="single" 
                     selected={date} 
@@ -307,16 +314,16 @@ export default function BookingForm({
               </Popover>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-2">
-                <Label>Başlangıç Saati</Label>
+                <Label className="text-xs font-semibold text-slate-700">Başlangıç Saati</Label>
                 <Select onValueChange={(v) => setStartHour(parseInt(v))} value={startHour.toString()}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {HOUR_OPTIONS.map((hour) => (
-                      <SelectItem key={hour} value={hour.toString()}>
+                      <SelectItem key={hour} value={hour.toString()} className="text-sm">
                         {hour.toString().padStart(2, '0')}:00
                       </SelectItem>
                     ))}
@@ -324,14 +331,14 @@ export default function BookingForm({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Bitiş Saati</Label>
+                <Label className="text-xs font-semibold text-slate-700">Bitiş Saati</Label>
                 <Select onValueChange={(v) => setEndHour(parseInt(v))} value={endHour.toString()}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {HOUR_OPTIONS.filter(h => h > startHour).map((hour) => (
-                      <SelectItem key={hour} value={hour.toString()}>
+                      <SelectItem key={hour} value={hour.toString()} className="text-sm">
                         {hour.toString().padStart(2, '0')}:00
                       </SelectItem>
                     ))}
@@ -341,24 +348,27 @@ export default function BookingForm({
             </div>
 
             {endHour - startHour < (charterOptions.hourly.minHours || 2) && (
-              <p className="text-xs text-amber-600 bg-amber-50 p-2 rounded">
-                ⚠️ Minimum {charterOptions.hourly.minHours} saat kiralama zorunludur.
-              </p>
+              <div className="flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                <span className="text-amber-600 text-xs">⚠️</span>
+                <p className="text-xs text-amber-700 font-medium">
+                  Minimum {charterOptions.hourly.minHours} saat kiralama zorunludur.
+                </p>
+              </div>
             )}
           </>
         )}
 
         {charterType === "daily" && (
           <div className="space-y-2 flex flex-col">
-            <Label>Tarih</Label>
+            <Label className="text-xs font-semibold text-slate-700">Tarih</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant={"outline"} className="justify-start text-left font-normal">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP", { locale: tr }) : <span>Tarih Seçin</span>}
+                <Button variant={"outline"} className="h-10 justify-start text-left font-normal text-sm border-slate-300 hover:bg-slate-50 hover:border-slate-400 focus:ring-2 focus:ring-blue-500">
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5 text-slate-500" />
+                  {date ? format(date, "PPP", { locale: tr }) : <span className="text-slate-500">Tarih Seçin</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
+              <PopoverContent className="w-auto p-0" align="start">
                 <Calendar 
                   mode="single" 
                   selected={date} 
@@ -373,17 +383,17 @@ export default function BookingForm({
 
         {charterType === "stay" && (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-2 flex flex-col">
-                <Label>Giriş Tarihi</Label>
+                <Label className="text-xs font-semibold text-slate-700">Giriş Tarihi</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant={"outline"} className="justify-start text-left font-normal text-sm">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, "dd MMM", { locale: tr }) : <span>Giriş</span>}
+                    <Button variant={"outline"} className="h-10 justify-start text-left font-normal text-xs border-slate-300 hover:bg-slate-50 hover:border-slate-400 focus:ring-2 focus:ring-blue-500">
+                      <CalendarIcon className="mr-2 h-3.5 w-3.5 text-slate-500" />
+                      {date ? format(date, "dd MMM", { locale: tr }) : <span className="text-slate-500">Giriş</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar 
                       mode="single" 
                       selected={date} 
@@ -403,15 +413,15 @@ export default function BookingForm({
                 </Popover>
               </div>
               <div className="space-y-2 flex flex-col">
-                <Label>Çıkış Tarihi</Label>
+                <Label className="text-xs font-semibold text-slate-700">Çıkış Tarihi</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant={"outline"} className="justify-start text-left font-normal text-sm">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {checkOutDate ? format(checkOutDate, "dd MMM", { locale: tr }) : <span>Çıkış</span>}
+                    <Button variant={"outline"} className="h-10 justify-start text-left font-normal text-xs border-slate-300 hover:bg-slate-50 hover:border-slate-400 focus:ring-2 focus:ring-blue-500">
+                      <CalendarIcon className="mr-2 h-3.5 w-3.5 text-slate-500" />
+                      {checkOutDate ? format(checkOutDate, "dd MMM", { locale: tr }) : <span className="text-slate-500">Çıkış</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar 
                       mode="single" 
                       selected={checkOutDate} 
@@ -430,45 +440,73 @@ export default function BookingForm({
             </div>
 
             {date && checkOutDate && differenceInDays(checkOutDate, date) > 0 && (
-              <p className="text-sm text-center text-slate-600 bg-slate-50 p-2 rounded">
-                🌙 {differenceInDays(checkOutDate, date)} gece konaklama
-              </p>
+              <div className="flex items-center justify-center gap-2 p-2.5 bg-indigo-50 border border-indigo-100 rounded-lg">
+                <span className="text-indigo-600 text-xs">🌙</span>
+                <p className="text-xs text-center text-indigo-700 font-medium">
+                  {differenceInDays(checkOutDate, date)} gece konaklama
+                </p>
+              </div>
             )}
           </>
         )}
 
         {/* 3. Kişisel Bilgiler */}
         <div className="space-y-2">
-          <Label>Ad Soyad</Label>
-          <Input placeholder="Adınız Soyadınız" onChange={(e) => setName(e.target.value)} />
+          <Label className="text-xs font-semibold text-slate-700">Ad Soyad</Label>
+          <Input 
+            placeholder="Adınız Soyadınız" 
+            onChange={(e) => setName(e.target.value)} 
+            className="h-10 text-sm border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
 
         <div className="space-y-2">
-          <Label>Telefon (WhatsApp)</Label>
-          <Input type="tel" placeholder="05XX XXX XX XX" onChange={(e) => setPhone(e.target.value)} />
+          <Label className="text-xs font-semibold text-slate-700">Telefon (WhatsApp)</Label>
+          <Input 
+            type="tel" 
+            placeholder="05XX XXX XX XX" 
+            onChange={(e) => setPhone(e.target.value)} 
+            className="h-10 text-sm border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
         
         <div className="space-y-2">
-          <Label>Kişi Sayısı</Label>
-          <Input type="number" placeholder="Örn: 6" onChange={(e) => setGuests(e.target.value)} />
+          <Label className="text-xs font-semibold text-slate-700">Kişi Sayısı</Label>
+          <Input 
+            type="number" 
+            placeholder="Örn: 6" 
+            onChange={(e) => setGuests(e.target.value)} 
+            className="h-10 text-sm border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
         </div>
 
         {/* Toplam Fiyat */}
         {priceCalculation.totalPrice > 0 && (
-          <div className="p-4 bg-slate-900 text-white rounded-lg">
+          <div className="p-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-lg shadow-lg">
             <div className="flex justify-between items-center">
-              <span className="text-sm">Toplam Tutar</span>
-              <span className="text-2xl font-bold">{formatCurrency(priceCalculation.totalPrice)}</span>
+              <span className="text-xs lg:text-sm font-medium text-slate-200">Toplam Tutar</span>
+              <span className="text-xl lg:text-2xl font-bold">{formatCurrency(priceCalculation.totalPrice)}</span>
             </div>
           </div>
         )}
 
-        <Button className="w-full text-lg py-6 bg-blue-900 hover:bg-blue-800" onClick={handleSubmit} disabled={loading}>
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Müsaitlik Sor"}
+        <Button 
+          className="w-full h-10 lg:h-11 text-sm lg:text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+          onClick={handleSubmit} 
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Gönderiliyor...
+            </>
+          ) : (
+            "Müsaitlik Sor"
+          )}
         </Button>
       </div>
       
-      <p className="text-xs text-center text-gray-400 mt-4">
+      <p className="text-xs text-center text-slate-400 mt-3 leading-relaxed">
         Kredi kartı gerekmez. Sadece uygunluk kontrolü yapılır.
       </p>
     </div>
