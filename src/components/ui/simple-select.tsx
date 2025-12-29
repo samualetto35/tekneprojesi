@@ -130,7 +130,7 @@ export function SimpleSelect({
         <div
           ref={menuRef}
           className={cn(
-            "absolute z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl max-h-[320px] overflow-y-auto",
+            "absolute z-[9999] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl max-h-[320px] overflow-y-auto",
             menuClassName
           )}
           style={{

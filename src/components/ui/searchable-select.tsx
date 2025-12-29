@@ -139,7 +139,7 @@ export function SearchableSelect({
         <div
           ref={menuRef}
           className={cn(
-            "absolute z-50 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl",
+            "absolute z-[9999] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl",
             menuClassName
           )}
           style={{

@@ -97,7 +97,7 @@ export default function SearchBar({
     : "w-full max-w-4xl mx-auto";
 
   return (
-    <div className={outerWidthClass}>
+    <div className={`${outerWidthClass} relative z-10`}>
       <div
         className={`${wrapperStyle} rounded-full ${outerPadding} flex flex-row flex-nowrap items-center gap-1`}
       >
