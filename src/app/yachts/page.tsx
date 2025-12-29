@@ -171,7 +171,16 @@ export default async function YachtsPage({
   
   const listings = sortListings(filteredListings, sortKey, priceType);
   const listingsCount = listings.length;
-  const titleText = `${locationFilter || "Türkiye"} için Tekneler`;
+  
+  // Tür isimlerini Türkçe'ye çevir
+  const typeLabels: Record<string, string> = {
+    hourly: "Saatlik",
+    daily: "Günlük",
+    stay: "Konaklamalı"
+  };
+  const typeLabel = rentalType ? typeLabels[rentalType] : "";
+  
+  const titleText = `${locationFilter || "Türkiye"} için ${typeLabel ? typeLabel + " " : ""}Tekneler`;
   const breadcrumbText = locationFilter ? locationFilter : "Lokasyon Seçin";
 
   return (
