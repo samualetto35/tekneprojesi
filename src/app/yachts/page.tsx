@@ -3,7 +3,7 @@ import { BoatCard } from "@/components/BoatCard";
 import SearchBar from "@/components/SearchBar";
 import ScrollToTopOnMount from "@/components/ScrollToTopOnMount";
 import SortSelect from "@/components/SortSelect";
-import { FiltersButton } from "@/components/FiltersPanel";
+import { FiltersButton, ClearFiltersButton } from "@/components/FiltersPanel";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, MapPin, Moon } from "lucide-react";
 
@@ -251,6 +251,7 @@ export default async function YachtsPage({
         {listings.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-10 text-center text-slate-600">
             <p>Seçilen filtrelere uygun yat bulunamadı.</p>
+            <ClearFiltersButton type={rentalType} location={locationFilter} />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

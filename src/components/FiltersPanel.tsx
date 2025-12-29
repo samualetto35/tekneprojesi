@@ -77,8 +77,9 @@ export default function FiltersPanel({
   const maxCapacityValue = capacities.length > 0 ? Math.max(...capacities) : 50;
 
   const handleClearFilters = () => {
+    // Preserve the type filter as it's mandatory
     const clearedFilters: FilterState = {
-      type: "",
+      type: filters.type, // Keep the current type filter
       minPrice: "",
       maxPrice: "",
       hasCaptain: null,
@@ -94,8 +95,8 @@ export default function FiltersPanel({
   };
 
   const hasActiveFilters = () => {
+    // Check if any filter besides type is active (type is mandatory, so we don't count it)
     return (
-      filters.type !== "" ||
       filters.minPrice !== "" ||
       filters.maxPrice !== "" ||
       filters.hasCaptain !== null ||
@@ -599,14 +600,28 @@ export function FiltersButton({
   const filteredListings = filterListings(listings, currentFilters, priceType);
   const filteredCount = filteredListings.length;
 
+  // Check if any filter besides type is active (for red dot indicator)
+  const hasNonTypeFilters = () => {
+    return (
+      currentFilters.minPrice !== "" ||
+      currentFilters.maxPrice !== "" ||
+      currentFilters.hasCaptain !== null ||
+      currentFilters.minCapacity !== "" ||
+      currentFilters.maxCapacity !== ""
+    );
+  };
+
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
+        className="relative flex items-center gap-2 rounded-full bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
       >
         <SlidersHorizontal className="h-4 w-4" />
         <span>Filtreler</span>
+        {hasNonTypeFilters() && (
+          <span className="absolute -top-1 -right-1 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+        )}
       </button>
 
       {isOpen && (
@@ -632,5 +647,33 @@ export function FiltersButton({
         </>
       )}
     </>
+  );
+}
+
+// Clear Filters Button Component (for use in empty state)
+export function ClearFiltersButton({ 
+  type,
+  location
+}: { 
+  type?: string;
+  location?: string;
+}) {
+  const handleClearFilters = () => {
+    // Build URL params - keep only type and location, remove all other filters
+    const params = new URLSearchParams();
+    if (type) params.set("type", type);
+    if (location) params.set("location", location);
+    
+    window.location.href = `/yachts?${params.toString()}`;
+  };
+
+  return (
+    <Button
+      variant="outline"
+      onClick={handleClearFilters}
+      className="mt-4 border-slate-300 text-slate-700 hover:bg-slate-50"
+    >
+      Seçimleri Kaldır
+    </Button>
   );
 }
