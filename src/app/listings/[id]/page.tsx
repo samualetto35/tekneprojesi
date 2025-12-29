@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Users, Clock, Anchor } from "lucide-react";
 import BookingForm from "@/components/BookingForm";
 import BackButton from "@/components/BackButton";
+import ImageCarousel from "@/components/ImageCarousel";
 
 // Sayfa params ve searchParams ile ID ve type'ı alır
 // Next.js 16'da bu değerler Promise olarak geliyor, bu nedenle önce await ile çözülüyor.
@@ -83,12 +84,14 @@ export default async function ListingDetail({
 
       {/* GÖRSEL ALANI */}
       <div className="h-[60vh] bg-gray-200 relative">
-        <img 
-          src={boat.image_urls?.[0]} 
-          alt={boat.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-8 text-white">
+        {boat.image_urls && boat.image_urls.length > 0 && (
+          <ImageCarousel 
+            images={boat.image_urls} 
+            title={boat.title}
+            autoPlayInterval={5000}
+          />
+        )}
+        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-8 text-white pointer-events-none z-20">
           <div className="flex gap-2 mb-3">
             {boat.is_hourly_active && <Badge className="bg-white/20 backdrop-blur-sm">Saatlik</Badge>}
             {boat.is_daily_active && <Badge className="bg-white/20 backdrop-blur-sm">Günlük</Badge>}
