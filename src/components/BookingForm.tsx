@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, differenceInDays } from "date-fns";
 import { tr } from "date-fns/locale";
-import { CalendarIcon, Loader2, Clock } from "lucide-react";
+import { CalendarIcon, Loader2, Clock, ChevronDown, Users } from "lucide-react";
 
 interface CharterOption {
   active: boolean;
@@ -74,7 +74,26 @@ export default function BookingForm({
   const [endHour, setEndHour] = useState<number>(14);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [guests, setGuests] = useState("");
+  const [guests, setGuests] = useState("1");
+  const [isGuestsDropdownOpen, setIsGuestsDropdownOpen] = useState(false);
+  const guestsDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Kişi sayısı seçenekleri (1-20)
+  const GUEST_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
+
+  // Dropdown dışına tıklanınca kapat
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (guestsDropdownRef.current && !guestsDropdownRef.current.contains(event.target as Node)) {
+        setIsGuestsDropdownOpen(false);
+      }
+    };
+
+    if (isGuestsDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isGuestsDropdownOpen]);
 
   // Fiyat hesaplamaları
   const priceCalculation = useMemo(() => {
@@ -472,12 +491,48 @@ export default function BookingForm({
         
         <div className="space-y-2">
           <Label className="text-xs font-semibold text-slate-700">Kişi Sayısı</Label>
-          <Input 
-            type="number" 
-            placeholder="Örn: 6" 
-            onChange={(e) => setGuests(e.target.value)} 
-            className="h-10 text-sm border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+          <div ref={guestsDropdownRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsGuestsDropdownOpen(!isGuestsDropdownOpen)}
+              className="w-full h-10 px-3 text-left text-sm bg-white border border-slate-300 rounded-md shadow-sm hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-slate-500" />
+                <span className={guests ? "text-slate-900" : "text-slate-500"}>
+                  {guests ? `${guests} ${parseInt(guests) === 1 ? 'Kişi' : 'Kişi'}` : 'Kişi Sayısı Seçin'}
+                </span>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isGuestsDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            
+            {isGuestsDropdownOpen && (
+              <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                <div className="py-1">
+                  {GUEST_OPTIONS.map((count) => (
+                    <button
+                      key={count}
+                      type="button"
+                      onClick={() => {
+                        setGuests(count.toString());
+                        setIsGuestsDropdownOpen(false);
+                      }}
+                      className={`w-full px-3 py-2.5 text-left text-sm hover:bg-blue-50 transition-colors flex items-center justify-between ${
+                        guests === count.toString() 
+                          ? 'bg-blue-50 text-blue-700 font-medium' 
+                          : 'text-slate-700'
+                      }`}
+                    >
+                      <span>{count} {count === 1 ? 'Kişi' : 'Kişi'}</span>
+                      {guests === count.toString() && (
+                        <span className="text-blue-600">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Toplam Fiyat */}
