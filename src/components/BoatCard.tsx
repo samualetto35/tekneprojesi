@@ -51,7 +51,7 @@ export function BoatCard({ boat, priceType }: BoatCardProps) {
         </div>
 
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">{boat.title}</CardTitle>
+          <CardTitle className="text-lg truncate">{boat.title}</CardTitle>
           <div className="flex items-center text-slate-500 text-sm">
             <MapPin className="w-4 h-4 mr-1" /> {boat.location}
           </div>

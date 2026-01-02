@@ -143,12 +143,13 @@ export default function ImageCarousel({
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {images.map((image, index) => (
-            <img
-              key={index}
-              src={image}
-              alt={`${title} - Resim ${index + 1}`}
-              className="w-full h-full object-cover flex-shrink-0"
-            />
+            <div key={index} className="w-full h-full flex-shrink-0 flex items-center justify-center bg-slate-900/30">
+              <img
+                src={image}
+                alt={`${title} - Resim ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
           ))}
         </div>
 
@@ -194,24 +195,44 @@ export default function ImageCarousel({
 
       {/* Fullscreen Modal */}
       <Dialog open={isFullscreen} onOpenChange={setIsFullscreen}>
-        <DialogContent className="max-w-none w-screen h-screen max-h-screen p-0 bg-black border-none m-0 rounded-none left-0 top-0 translate-x-0 translate-y-0">
+        <DialogContent 
+          className="max-w-none w-screen h-screen max-h-screen p-0 bg-black border-none m-0 rounded-none left-0 top-0 translate-x-0 translate-y-0 [&>button]:!hidden"
+          onClick={(e) => {
+            // Close when clicking on the background (not on the image or buttons)
+            if (e.target === e.currentTarget) {
+              setIsFullscreen(false);
+            }
+          }}
+        >
           <DialogTitle className="sr-only">Resim Galerisi - {title}</DialogTitle>
-          <div className="relative w-full h-full flex items-center justify-center">
-            {/* Close Button */}
+          <div className="relative w-full h-full flex flex-col items-center justify-center">
+            {/* Close Button - Only one X button */}
             <button
-              onClick={() => setIsFullscreen(false)}
-              className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white rounded-full p-2"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFullscreen(false);
+              }}
+              className="absolute top-4 right-4 z-[60] bg-black/70 hover:bg-black/90 text-white rounded-full p-2.5 shadow-lg transition-all"
               aria-label="Kapat"
             >
               <X className="w-6 h-6" />
             </button>
 
-            {/* Fullscreen Image */}
-            <div className="relative w-full h-full flex items-center justify-center">
+            {/* Fullscreen Image Container - maintains aspect ratio, doesn't overflow, dark background on sides */}
+            <div 
+              className="relative w-full flex-1 flex items-center justify-center bg-black"
+              onClick={(e) => e.stopPropagation()}
+            >
               <img
                 src={images[currentIndex]}
                 alt={`${title} - Resim ${currentIndex + 1}`}
-                className="w-full h-full object-contain"
+                className="max-w-full max-h-full w-auto h-auto object-contain"
+                style={{ 
+                  maxWidth: '100vw', 
+                  maxHeight: 'calc(100vh - 120px)',
+                  width: 'auto',
+                  height: 'auto'
+                }}
               />
             </div>
 
@@ -219,23 +240,53 @@ export default function ImageCarousel({
             {images.length > 1 && (
               <>
                 <button
-                  onClick={goToPrevious}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 z-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToPrevious();
+                  }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 z-[60] shadow-lg transition-all"
                   aria-label="Önceki resim"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
-                  onClick={goToNext}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-3 z-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    goToNext();
+                  }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full p-3 z-[60] shadow-lg transition-all"
                   aria-label="Sonraki resim"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
 
                 {/* Image Counter in Fullscreen */}
-                <div className="absolute top-4 left-4 bg-black/50 text-white px-4 py-2 rounded-full text-base z-50">
+                <div className="absolute top-4 left-4 bg-black/70 text-white px-4 py-2 rounded-full text-base z-[60] shadow-lg">
                   {currentIndex + 1} / {images.length}
+                </div>
+
+                {/* Thumbnail Gallery at Bottom */}
+                <div className="w-full bg-black/80 px-4 py-3 flex items-center justify-center gap-2 overflow-x-auto">
+                  {images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToSlide(index);
+                      }}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        index === currentIndex 
+                          ? 'border-white scale-110' 
+                          : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
                 </div>
               </>
             )}
