@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, X, Maximize2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Maximize2, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface ImageCarouselProps {
@@ -21,6 +21,15 @@ export default function ImageCarousel({
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isPausedRef = useRef(false);
+  
+  // Zoom states
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [lastTouchDistance, setLastTouchDistance] = useState<number | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -54,6 +63,10 @@ export default function ImageCarousel({
 
   const goToNext = () => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
+    // Reset zoom when changing image
+    if (isFullscreen) {
+      resetZoom();
+    }
     // Reset auto-play
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -69,6 +82,10 @@ export default function ImageCarousel({
 
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    // Reset zoom when changing image
+    if (isFullscreen) {
+      resetZoom();
+    }
     // Reset auto-play
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -84,6 +101,8 @@ export default function ImageCarousel({
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
+    // Reset zoom when changing image
+    resetZoom();
     // Reset auto-play
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -96,6 +115,158 @@ export default function ImageCarousel({
       }
     }, 100);
   };
+
+  // Zoom functions
+  const resetZoom = () => {
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const constrainPosition = (newScale: number, newX: number, newY: number) => {
+    if (!imageRef.current || !containerRef.current) {
+      return { x: newX, y: newY };
+    }
+
+    const img = imageRef.current;
+    const container = containerRef.current;
+    
+    // Get image natural dimensions
+    const imgRect = img.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    
+    // Calculate scaled dimensions
+    const scaledWidth = imgRect.width * newScale;
+    const scaledHeight = imgRect.height * newScale;
+    
+    // Calculate boundaries
+    const maxX = Math.max(0, (scaledWidth - containerRect.width) / 2);
+    const maxY = Math.max(0, (scaledHeight - containerRect.height) / 2);
+    
+    // Constrain position
+    return {
+      x: Math.max(-maxX, Math.min(maxX, newX)),
+      y: Math.max(-maxY, Math.min(maxY, newY)),
+    };
+  };
+
+  const handleZoom = (delta: number, centerX?: number, centerY?: number) => {
+    setScale((prevScale) => {
+      const newScale = Math.max(1, Math.min(5, prevScale + delta));
+      
+      // Zoom to center of viewport or mouse position
+      if (centerX !== undefined && centerY !== undefined && containerRef.current && imageRef.current) {
+        const container = containerRef.current;
+        const rect = container.getBoundingClientRect();
+        
+        // Calculate zoom point relative to container center
+        const zoomPointX = centerX - rect.left - rect.width / 2;
+        const zoomPointY = centerY - rect.top - rect.height / 2;
+        
+        // Calculate new position to keep zoom point fixed
+        const scaleChange = newScale / prevScale;
+        const newX = position.x - (zoomPointX * (scaleChange - 1));
+        const newY = position.y - (zoomPointY * (scaleChange - 1));
+        
+        // Constrain position
+        const constrained = constrainPosition(newScale, newX, newY);
+        setPosition(constrained);
+      } else if (newScale === 1) {
+        // Reset position when zooming out to 1x
+        setPosition({ x: 0, y: 0 });
+      }
+      
+      return newScale;
+    });
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (!isFullscreen) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    handleZoom(delta, e.clientX, e.clientY);
+  };
+
+  const handleDoubleClick = (e: React.MouseEvent) => {
+    if (!isFullscreen) return;
+    e.stopPropagation();
+    if (scale > 1) {
+      resetZoom();
+    } else {
+      handleZoom(1.5, e.clientX, e.clientY);
+    }
+  };
+
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (scale <= 1) return;
+    e.preventDefault();
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || scale <= 1) return;
+    e.preventDefault();
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+    const constrained = constrainPosition(scale, newX, newY);
+    setPosition(constrained);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Touch pinch zoom
+  const getTouchDistance = (touches: TouchList) => {
+    if (touches.length < 2) return null;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchStartFullscreen = (e: React.TouchEvent) => {
+    if (!isFullscreen) return;
+    if (e.touches.length === 2) {
+      const distance = getTouchDistance(e.touches);
+      if (distance) setLastTouchDistance(distance);
+    } else if (e.touches.length === 1 && scale > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y });
+    }
+  };
+
+  const handleTouchMoveFullscreen = (e: React.TouchEvent) => {
+    if (!isFullscreen) return;
+    if (e.touches.length === 2 && lastTouchDistance) {
+      const distance = getTouchDistance(e.touches);
+      if (distance) {
+        const delta = (distance - lastTouchDistance) / 100;
+        // Calculate center point between two touches
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        handleZoom(delta, centerX, centerY);
+        setLastTouchDistance(distance);
+      }
+    } else if (e.touches.length === 1 && isDragging && scale > 1) {
+      const newX = e.touches[0].clientX - dragStart.x;
+      const newY = e.touches[0].clientY - dragStart.y;
+      const constrained = constrainPosition(scale, newX, newY);
+      setPosition(constrained);
+    }
+  };
+
+  const handleTouchEndFullscreen = () => {
+    setLastTouchDistance(null);
+    setIsDragging(false);
+  };
+
+  // Reset zoom when fullscreen closes
+  useEffect(() => {
+    if (!isFullscreen) {
+      resetZoom();
+    }
+  }, [isFullscreen]);
 
   // Touch handlers for swipe
   const onTouchStart = (e: React.TouchEvent) => {
@@ -206,6 +377,47 @@ export default function ImageCarousel({
         >
           <DialogTitle className="sr-only">Resim Galerisi - {title}</DialogTitle>
           <div className="relative w-full h-full flex flex-col items-center justify-center">
+            {/* Zoom Controls - Top right, left of close button */}
+            <div className="absolute top-4 right-20 z-[60] flex items-center gap-2 bg-black/70 rounded-full px-3 py-2 shadow-lg">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleZoom(-0.5);
+                }}
+                disabled={scale <= 1}
+                className="text-white hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all p-1.5"
+                aria-label="Zoom out"
+              >
+                <ZoomOut className="w-5 h-5" />
+              </button>
+              <span className="text-white text-sm min-w-[3rem] text-center">
+                {Math.round(scale * 100)}%
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleZoom(0.5);
+                }}
+                disabled={scale >= 5}
+                className="text-white hover:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all p-1.5"
+                aria-label="Zoom in"
+              >
+                <ZoomIn className="w-5 h-5" />
+              </button>
+              {scale > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    resetZoom();
+                  }}
+                  className="text-white hover:text-gray-300 transition-all p-1.5 ml-2 border-l border-white/20 pl-2"
+                  aria-label="Reset zoom"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+
             {/* Close Button - Only one X button */}
             <button
               onClick={(e) => {
@@ -220,20 +432,46 @@ export default function ImageCarousel({
 
             {/* Fullscreen Image Container - maintains aspect ratio, doesn't overflow, dark background on sides */}
             <div 
-              className="relative w-full flex-1 flex items-center justify-center bg-black"
-              onClick={(e) => e.stopPropagation()}
+              ref={containerRef}
+              className="relative w-full flex-1 flex items-center justify-center bg-black overflow-hidden cursor-grab active:cursor-grabbing"
+              onClick={(e) => {
+                // Only close on background click if not zoomed
+                if (scale <= 1 && e.target === e.currentTarget) {
+                  setIsFullscreen(false);
+                }
+              }}
+              onWheel={handleWheel}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStartFullscreen}
+              onTouchMove={handleTouchMoveFullscreen}
+              onTouchEnd={handleTouchEndFullscreen}
             >
-              <img
-                src={images[currentIndex]}
-                alt={`${title} - Resim ${currentIndex + 1}`}
-                className="max-w-full max-h-full w-auto h-auto object-contain"
-                style={{ 
-                  maxWidth: '100vw', 
-                  maxHeight: 'calc(100vh - 120px)',
-                  width: 'auto',
-                  height: 'auto'
+              <div
+                style={{
+                  transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                  transition: isDragging ? 'none' : 'transform 0.1s ease-out',
                 }}
-              />
+                className="will-change-transform"
+              >
+                <img
+                  ref={imageRef}
+                  src={images[currentIndex]}
+                  alt={`${title} - Resim ${currentIndex + 1}`}
+                  className="max-w-full max-h-full w-auto h-auto object-contain select-none"
+                  style={{ 
+                    maxWidth: '100vw', 
+                    maxHeight: 'calc(100vh - 120px)',
+                    width: 'auto',
+                    height: 'auto',
+                    touchAction: 'none',
+                  }}
+                  onDoubleClick={handleDoubleClick}
+                  draggable={false}
+                />
+              </div>
             </div>
 
             {/* Navigation in Fullscreen */}
