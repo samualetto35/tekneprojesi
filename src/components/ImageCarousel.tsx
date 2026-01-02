@@ -376,7 +376,7 @@ export default function ImageCarousel({
           }}
         >
           <DialogTitle className="sr-only">Resim Galerisi - {title}</DialogTitle>
-          <div className="relative w-full h-full flex flex-col items-center justify-center">
+          <div className="relative w-full h-full flex flex-col items-center justify-center pb-16 md:pb-20">
             {/* Zoom Controls - Top right, left of close button */}
             <div className="absolute top-4 right-20 z-[60] flex items-center gap-2 bg-black/70 rounded-full px-3 py-2 shadow-lg">
               <button
@@ -433,7 +433,7 @@ export default function ImageCarousel({
             {/* Fullscreen Image Container - maintains aspect ratio, doesn't overflow, dark background on sides */}
             <div 
               ref={containerRef}
-              className="relative w-full flex-1 flex items-center justify-center bg-black overflow-hidden cursor-grab active:cursor-grabbing"
+              className="relative w-full flex-1 flex items-center justify-center bg-black overflow-hidden cursor-grab active:cursor-grabbing pb-16 md:pb-20"
               onClick={(e) => {
                 // Only close on background click if not zoomed
                 if (scale <= 1 && e.target === e.currentTarget) {
@@ -504,7 +504,7 @@ export default function ImageCarousel({
                 </div>
 
                 {/* Thumbnail Gallery at Bottom */}
-                <div className="w-full bg-black/80 px-4 py-3 flex items-center justify-center gap-2 overflow-x-auto">
+                <div className="absolute bottom-0 left-0 right-0 w-full bg-black/80 px-2 md:px-4 py-2 md:py-3 flex items-center justify-start gap-2 overflow-x-auto safe-area-inset-bottom">
                   {images.map((image, index) => (
                     <button
                       key={index}
@@ -512,7 +512,7 @@ export default function ImageCarousel({
                         e.stopPropagation();
                         goToSlide(index);
                       }}
-                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                      className={`flex-shrink-0 w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden border-2 transition-all ${
                         index === currentIndex 
                           ? 'border-white scale-110' 
                           : 'border-transparent opacity-60 hover:opacity-100 hover:scale-105'

@@ -91,15 +91,15 @@ export default async function ListingDetail({
             autoPlayInterval={5000}
           />
         )}
-        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-8 text-white pointer-events-none z-20">
-          <div className="flex gap-2 mb-3">
-            {boat.is_hourly_active && <Badge className="bg-white/20 backdrop-blur-sm">Saatlik</Badge>}
-            {boat.is_daily_active && <Badge className="bg-white/20 backdrop-blur-sm">Günlük</Badge>}
-            {boat.is_stay_active && <Badge className="bg-white/20 backdrop-blur-sm">Konaklamalı</Badge>}
+        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/80 to-transparent p-4 md:p-8 text-white pointer-events-none z-20">
+          <div className="flex gap-2 mb-2 md:mb-3 flex-wrap">
+            {boat.is_hourly_active && <Badge className="bg-white/20 backdrop-blur-sm text-xs md:text-sm">Saatlik</Badge>}
+            {boat.is_daily_active && <Badge className="bg-white/20 backdrop-blur-sm text-xs md:text-sm">Günlük</Badge>}
+            {boat.is_stay_active && <Badge className="bg-white/20 backdrop-blur-sm text-xs md:text-sm">Konaklamalı</Badge>}
           </div>
-          <h1 className="text-4xl font-bold">{boat.title}</h1>
-          <p className="flex items-center mt-2 text-lg">
-            <MapPin className="w-5 h-5 mr-2" /> {boat.location}
+          <h1 className="text-2xl md:text-4xl font-bold">{boat.title}</h1>
+          <p className="flex items-center mt-2 text-sm md:text-lg">
+            <MapPin className="w-4 h-4 md:w-5 md:h-5 mr-2" /> {boat.location}
           </p>
         </div>
       </div>

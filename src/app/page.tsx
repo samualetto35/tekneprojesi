@@ -65,18 +65,23 @@ function ListingSection({
   return (
     <section className={`py-6 ${bgColor}`}>
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
+        <div className="flex items-center justify-between mb-4 md:mb-8">
+          <h2 className="text-lg md:text-xl font-semibold text-slate-800">{title}</h2>
           <Link href={linkHref}>
-            <Button variant="ghost" className="text-slate-600 hover:text-slate-900">
+            <Button variant="ghost" className="text-slate-600 hover:text-slate-900 text-sm md:text-base">
               Tümünü Gör <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {boats.map((boat) => (
-            <BoatCard key={boat.id} boat={boat} priceType={priceType} />
-          ))}
+        {/* Mobile: Horizontal scroll, Desktop: Grid */}
+        <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 overflow-x-auto md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0 pb-1">
+          <div className="flex md:contents gap-4 md:gap-0">
+            {boats.map((boat) => (
+              <div key={boat.id} className="flex-shrink-0 w-[280px] md:w-auto md:flex-shrink">
+                <BoatCard boat={boat} priceType={priceType} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
