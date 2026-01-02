@@ -76,8 +76,11 @@ function ListingSection({
         {/* Mobile: Horizontal scroll, Desktop: Grid */}
         <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 overflow-x-auto md:overflow-x-visible -mx-4 px-4 md:mx-0 md:px-0 pb-1">
           <div className="flex md:contents gap-4 md:gap-0">
-            {boats.map((boat) => (
-              <div key={boat.id} className="flex-shrink-0 w-[280px] md:w-auto md:flex-shrink">
+            {boats.map((boat, index) => (
+              <div 
+                key={boat.id} 
+                className={`flex-shrink-0 w-[280px] md:w-auto md:flex-shrink ${index === boats.length - 1 ? 'pr-4 md:pr-0' : ''}`}
+              >
                 <BoatCard boat={boat} priceType={priceType} />
               </div>
             ))}
