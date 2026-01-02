@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, Clock, Anchor } from "lucide-react";
+import { MapPin, Users, Clock, Anchor, Calendar, Ruler, Ship, Home, Fuel, CheckCircle2 } from "lucide-react";
 import BookingForm from "@/components/BookingForm";
 import BackButton from "@/components/BackButton";
 import ImageCarousel from "@/components/ImageCarousel";
@@ -23,6 +23,39 @@ export default async function ListingDetail({
     .select('*')
     .eq('id', id)
     .single();
+
+  // Get amenities separately
+  let amenitiesData: any[] = [];
+  if (boat) {
+    const { data: listingAmenities } = await supabase
+      .from('listing_amenities')
+      .select(`
+        amenity_id,
+        amenities (
+          id,
+          name,
+          icon
+        )
+      `)
+      .eq('listing_id', id);
+    
+    if (listingAmenities) {
+      amenitiesData = listingAmenities.map((la: any) => ({
+        amenity_id: la.amenity_id,
+        amenities: la.amenities
+      }));
+    }
+  }
+
+  // Format captain name (first name + .)
+  const formatCaptainName = (name: string | null | undefined) => {
+    if (!name) return null;
+    const parts = name.trim().split(' ');
+    if (parts.length > 1) {
+      return `${parts[0]}.`;
+    }
+    return name;
+  };
 
   if (!boat) {
     // Ürün bulunamazsa framework 404'ü yerine sade bir bilgi ekranı göster
@@ -107,80 +140,162 @@ export default async function ListingDetail({
       <div className="container mx-auto mt-4 md:mt-6 px-4 sm:px-5 lg:px-6 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* SOL TARAF: BİLGİLER */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Tekne Özellikleri */}
-            <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4 lg:p-5">
-              <h2 className="text-xl lg:text-2xl font-bold mb-4 text-slate-900">Tekne Özellikleri</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="flex items-center p-3.5 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-lg border border-slate-200/50 hover:border-blue-300/50 transition-colors duration-200 group">
-                  <div className="flex-shrink-0 w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-500/20 transition-colors">
-                    <Users className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 font-medium mb-0.5">Kapasite</p>
-                    <p className="text-base font-bold text-slate-900">{boat.capacity} Kişi</p>
-                  </div>
-                </div>
-                <div className="flex items-center p-3.5 bg-gradient-to-br from-slate-50 to-slate-100/50 rounded-lg border border-slate-200/50 hover:border-blue-300/50 transition-colors duration-200 group">
-                  <div className="flex-shrink-0 w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-blue-500/20 transition-colors">
-                    <Anchor className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500 font-medium mb-0.5">Kaptan</p>
-                    <p className="text-base font-bold text-slate-900">{boat.has_captain ? "Kaptanlı" : "Kaptansız"}</p>
-                  </div>
+          <div className="lg:col-span-2 space-y-3">
+            {/* Kaptan Bilgisi */}
+            {boat.captain_name && (
+              <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm p-3">
+                <div className="flex items-center gap-2">
+                  <Anchor className="w-4 h-4 text-slate-500" />
+                  <span className="text-sm text-slate-600">Kaptan:</span>
+                  <span className="text-sm font-semibold text-slate-900">{formatCaptainName(boat.captain_name)}</span>
                 </div>
               </div>
-            </div>
-            
-            {/* Açıklama */}
-            <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4 lg:p-5">
-              <h2 className="text-xl lg:text-2xl font-bold mb-4 text-slate-900">Açıklama</h2>
-              <div className="prose prose-slate max-w-none">
-                <p className="text-slate-700 leading-relaxed text-sm lg:text-base whitespace-pre-line">
-                  {boat.description || "Bu tekne için henüz açıklama girilmemiş."}
-                </p>
+            )}
+
+            {/* Tekne Özellikleri */}
+            <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm p-3 lg:p-4">
+              <h2 className="text-base lg:text-lg font-semibold mb-3 text-slate-900">Tekne Özellikleri</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                {boat.capacity && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Kapasite</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.capacity} Kişi</p>
+                  </div>
+                )}
+                {boat.model_year && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Model Yılı</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.model_year}</p>
+                  </div>
+                )}
+                {boat.renovation_year && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Yenileme Yılı</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.renovation_year}</p>
+                  </div>
+                )}
+                {boat.cruising_capacity && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Seyir Kapasitesi</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.cruising_capacity}</p>
+                  </div>
+                )}
+                {boat.wc_count && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">WC Sayısı</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.wc_count}</p>
+                  </div>
+                )}
+                {boat.length_metres && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Uzunluk</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.length_metres} m</p>
+                  </div>
+                )}
+                {boat.width_metres && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Genişlik</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.width_metres} m</p>
+                  </div>
+                )}
+                {boat.boat_type && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Tekne Türü</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.boat_type}</p>
+                  </div>
+                )}
+                {boat.guest_bathroom_count && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Misafir Banyosu</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.guest_bathroom_count}</p>
+                  </div>
+                )}
+                {boat.guest_shower_count && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Misafir Duş</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.guest_shower_count}</p>
+                  </div>
+                )}
+                {boat.check_in_time && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Check-in</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.check_in_time}</p>
+                  </div>
+                )}
+                {boat.check_out_time && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Check-out</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.check_out_time}</p>
+                  </div>
+                )}
+                {boat.rental_model && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Kiralama Modeli</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.rental_model}</p>
+                  </div>
+                )}
+                {boat.fuel_price_included !== null && (
+                  <div className="flex flex-col p-2 bg-slate-50 rounded-md">
+                    <p className="text-xs text-slate-500 mb-0.5">Yakıt</p>
+                    <p className="text-sm font-semibold text-slate-900">{boat.fuel_price_included ? "Dahil" : "Dahil Değil"}</p>
+                  </div>
+                )}
               </div>
             </div>
 
+            {/* İmkanlar */}
+            {amenitiesData && amenitiesData.length > 0 && (
+              <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm p-3 lg:p-4">
+                <h2 className="text-base lg:text-lg font-semibold mb-3 text-slate-900">İmkanlar</h2>
+                <div className="flex flex-wrap gap-2">
+                  {amenitiesData.map((item: any) => (
+                    <Badge key={item.amenity_id} variant="outline" className="text-xs">
+                      {item.amenities?.name}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Açıklama */}
+            {boat.description && (
+              <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm p-3 lg:p-4">
+                <h2 className="text-base lg:text-lg font-semibold mb-2 text-slate-900">Açıklama</h2>
+                <p className="text-slate-700 leading-relaxed text-sm lg:text-base whitespace-pre-line">
+                  {boat.description}
+                </p>
+              </div>
+            )}
+
             {/* Fiyatlandırma */}
-            <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-4 lg:p-5">
-              <h2 className="text-xl lg:text-2xl font-bold mb-4 text-slate-900">Fiyatlandırma</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="bg-white rounded-lg border border-slate-200/60 shadow-sm p-3 lg:p-4">
+              <h2 className="text-base lg:text-lg font-semibold mb-3 text-slate-900">Fiyatlandırma</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {charterOptions.hourly.active && (
-                  <div className="p-3.5 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg border-2 border-blue-200/60 hover:border-blue-300 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Saatlik</p>
-                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                    </div>
-                    <p className="text-xl lg:text-2xl font-bold text-slate-900 mb-1">
+                  <div className="p-2.5 bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-lg border border-blue-200/60">
+                    <p className="text-xs font-semibold text-blue-700 mb-1">Saatlik</p>
+                    <p className="text-lg font-bold text-slate-900 mb-0.5">
                       {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.hourly.price)}
                     </p>
-                    <p className="text-xs text-blue-600 font-medium">Min. {charterOptions.hourly.minHours} saat</p>
+                    <p className="text-xs text-blue-600">Min. {charterOptions.hourly.minHours} saat</p>
                   </div>
                 )}
                 {charterOptions.daily.active && (
-                  <div className="p-3.5 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg border-2 border-emerald-200/60 hover:border-emerald-300 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide">Günlük</p>
-                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
-                    </div>
-                    <p className="text-xl lg:text-2xl font-bold text-slate-900 mb-1">
+                  <div className="p-2.5 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-lg border border-emerald-200/60">
+                    <p className="text-xs font-semibold text-emerald-700 mb-1">Günlük</p>
+                    <p className="text-lg font-bold text-slate-900 mb-0.5">
                       {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.daily.price)}
                     </p>
-                    <p className="text-xs text-emerald-600 font-medium">Günübirlik</p>
+                    <p className="text-xs text-emerald-600">Günübirlik</p>
                   </div>
                 )}
                 {charterOptions.stay.active && (
-                  <div className="p-3.5 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-lg border-2 border-purple-200/60 hover:border-purple-300 hover:shadow-md transition-all duration-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide">Konaklamalı</p>
-                      <div className="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
-                    </div>
-                    <p className="text-xl lg:text-2xl font-bold text-slate-900 mb-1">
+                  <div className="p-2.5 bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-lg border border-purple-200/60">
+                    <p className="text-xs font-semibold text-purple-700 mb-1">Konaklamalı</p>
+                    <p className="text-lg font-bold text-slate-900 mb-0.5">
                       {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: boat.currency || 'TRY' }).format(charterOptions.stay.price)}
                     </p>
-                    <p className="text-xs text-purple-600 font-medium">Min. {charterOptions.stay.minDays} gece (Gecelik)</p>
+                    <p className="text-xs text-purple-600">Min. {charterOptions.stay.minDays} gece</p>
                   </div>
                 )}
               </div>

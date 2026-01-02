@@ -130,6 +130,15 @@ export default async function YachtsPage({
     : null;
   const minCapacity = typeof resolvedSearchParams?.minCapacity === "string" ? resolvedSearchParams.minCapacity : "";
   const maxCapacity = typeof resolvedSearchParams?.maxCapacity === "string" ? resolvedSearchParams.maxCapacity : "";
+  const boatType = typeof resolvedSearchParams?.boatType === "string" ? resolvedSearchParams.boatType : "";
+  const minLength = typeof resolvedSearchParams?.minLength === "string" ? resolvedSearchParams.minLength : "";
+  const maxLength = typeof resolvedSearchParams?.maxLength === "string" ? resolvedSearchParams.maxLength : "";
+  const minWidth = typeof resolvedSearchParams?.minWidth === "string" ? resolvedSearchParams.minWidth : "";
+  const maxWidth = typeof resolvedSearchParams?.maxWidth === "string" ? resolvedSearchParams.maxWidth : "";
+  const minModelYear = typeof resolvedSearchParams?.minModelYear === "string" ? resolvedSearchParams.minModelYear : "";
+  const maxModelYear = typeof resolvedSearchParams?.maxModelYear === "string" ? resolvedSearchParams.maxModelYear : "";
+  const amenitiesParam = typeof resolvedSearchParams?.amenities === "string" ? resolvedSearchParams.amenities : "";
+  const selectedAmenities = amenitiesParam ? amenitiesParam.split(",") : [];
 
   const [listingsRaw, locations] = await Promise.all([
     getListings({ location: locationFilter, type: rentalType }),
@@ -147,7 +156,10 @@ export default async function YachtsPage({
   };
   const priceField = priceFieldMap[priceType];
   
-  if (minPrice || maxPrice || hasCaptain !== null || minCapacity || maxCapacity) {
+  // Apply filters
+  if (minPrice || maxPrice || hasCaptain !== null || minCapacity || maxCapacity || 
+      boatType || minLength || maxLength || minWidth || maxWidth || 
+      minModelYear || maxModelYear || selectedAmenities.length > 0) {
     filteredListings = listingsRaw.filter((item) => {
       // Price filter
       if (minPrice || maxPrice) {
@@ -165,8 +177,42 @@ export default async function YachtsPage({
       if (minCapacity && capacity < Number(minCapacity)) return false;
       if (maxCapacity && capacity > Number(maxCapacity)) return false;
       
+      // Boat type filter
+      if (boatType && item.boat_type !== boatType) return false;
+      
+      // Length filter
+      const length = item.length_metres || 0;
+      const lengthValue = typeof length === "number" ? length : Number(length || 0);
+      if (minLength && lengthValue < Number(minLength)) return false;
+      if (maxLength && lengthValue > Number(maxLength)) return false;
+      
+      // Width filter
+      const width = item.width_metres || 0;
+      const widthValue = typeof width === "number" ? width : Number(width || 0);
+      if (minWidth && widthValue < Number(minWidth)) return false;
+      if (maxWidth && widthValue > Number(maxWidth)) return false;
+      
+      // Model year filter
+      const modelYear = item.model_year || 0;
+      const modelYearValue = typeof modelYear === "number" ? modelYear : Number(modelYear || 0);
+      if (minModelYear && modelYearValue < Number(minModelYear)) return false;
+      if (maxModelYear && modelYearValue > Number(maxModelYear)) return false;
+      
       return true;
     });
+
+    // Amenities filter (requires separate query)
+    if (selectedAmenities.length > 0) {
+      const { data: listingsWithAmenities } = await supabase
+        .from('listing_amenities')
+        .select('listing_id')
+        .in('amenity_id', selectedAmenities);
+      
+      if (listingsWithAmenities) {
+        const listingIdsWithAmenities = new Set(listingsWithAmenities.map(la => la.listing_id));
+        filteredListings = filteredListings.filter(item => listingIdsWithAmenities.has(item.id));
+      }
+    }
   }
   
   const listings = sortListings(filteredListings, sortKey, priceType);
@@ -219,7 +265,26 @@ export default async function YachtsPage({
               </svg>
               <span>Harita</span>
             </button>
-            <FiltersButton listings={listingsRaw} priceType={priceType} currentFilters={{ minPrice, maxPrice, hasCaptain, minCapacity, maxCapacity, type: rentalType }} />
+            <FiltersButton 
+              listings={listingsRaw} 
+              priceType={priceType} 
+              currentFilters={{ 
+                minPrice, 
+                maxPrice, 
+                hasCaptain, 
+                minCapacity, 
+                maxCapacity, 
+                type: rentalType,
+                boatType,
+                minLength,
+                maxLength,
+                minWidth,
+                maxWidth,
+                minModelYear,
+                maxModelYear,
+                selectedAmenities
+              }} 
+            />
             <button className="flex items-center gap-2 rounded-full border border-[#0096a3] bg-white px-3 py-2 text-sm font-medium text-[#007782] shadow-sm hover:bg-[#f1fbfc]">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 21H5a2 2 0 0 1-2-2V7" />

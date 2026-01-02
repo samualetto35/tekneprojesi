@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Clock, Calendar, Moon, SlidersHorizontal } from "lucide-react";
+import { X, Clock, Calendar, Moon, SlidersHorizontal, Ship, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 type CharterType = "hourly" | "daily" | "stay";
 type PriceType = "hourly" | "daily" | "stay";
@@ -17,6 +19,14 @@ export interface FilterState {
   hasCaptain: boolean | null;
   minCapacity: string;
   maxCapacity: string;
+  boatType: string;
+  minLength: string;
+  maxLength: string;
+  minWidth: string;
+  maxWidth: string;
+  minModelYear: string;
+  maxModelYear: string;
+  selectedAmenities: string[];
 }
 
 interface FiltersPanelProps {
@@ -44,8 +54,39 @@ export default function FiltersPanel({
       hasCaptain: null,
       minCapacity: "",
       maxCapacity: "",
+      boatType: "",
+      minLength: "",
+      maxLength: "",
+      minWidth: "",
+      maxWidth: "",
+      minModelYear: "",
+      maxModelYear: "",
+      selectedAmenities: [],
     }
   );
+  const [amenities, setAmenities] = useState<any[]>([]);
+  const [boatTypes, setBoatTypes] = useState<string[]>([]);
+
+  // Load amenities and boat types
+  useEffect(() => {
+    const loadData = async () => {
+      // Load amenities
+      const { data: amenitiesData } = await supabase
+        .from('amenities')
+        .select('*')
+        .order('name');
+      if (amenitiesData) setAmenities(amenitiesData);
+
+      // Extract unique boat types from listings
+      const types = Array.from(new Set(
+        listings
+          .map(item => item.boat_type)
+          .filter(Boolean)
+      )).sort();
+      setBoatTypes(types);
+    };
+    loadData();
+  }, [listings]);
 
   // Update filters when initialFilters change
   useEffect(() => {
@@ -85,6 +126,14 @@ export default function FiltersPanel({
       hasCaptain: null,
       minCapacity: "",
       maxCapacity: "",
+      boatType: "",
+      minLength: "",
+      maxLength: "",
+      minWidth: "",
+      maxWidth: "",
+      minModelYear: "",
+      maxModelYear: "",
+      selectedAmenities: [],
     };
     setFilters(clearedFilters);
   };
@@ -101,7 +150,15 @@ export default function FiltersPanel({
       filters.maxPrice !== "" ||
       filters.hasCaptain !== null ||
       filters.minCapacity !== "" ||
-      filters.maxCapacity !== ""
+      filters.maxCapacity !== "" ||
+      filters.boatType !== "" ||
+      filters.minLength !== "" ||
+      filters.maxLength !== "" ||
+      filters.minWidth !== "" ||
+      filters.maxWidth !== "" ||
+      filters.minModelYear !== "" ||
+      filters.maxModelYear !== "" ||
+      filters.selectedAmenities.length > 0
     );
   };
 
@@ -280,6 +337,152 @@ export default function FiltersPanel({
                   </div>
                 </div>
               </div>
+
+              {/* Tekne Türü */}
+              {boatTypes.length > 0 && (
+                <div>
+                  <Label className="text-sm text-slate-700 mb-2 block">Tekne Türü</Label>
+                  <Select
+                    value={filters.boatType}
+                    onValueChange={(value) => setFilters({ ...filters, boatType: value })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Tümü" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Tümü</SelectItem>
+                      {boatTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Uzunluk */}
+              <div>
+                <Label className="text-sm text-slate-700 mb-2 block">Uzunluk (metre)</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <Input
+                      id="minLength"
+                      type="number"
+                      step="0.1"
+                      placeholder="Min"
+                      value={filters.minLength}
+                      onChange={(e) => setFilters({ ...filters, minLength: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                  <span className="text-slate-400">-</span>
+                  <div className="flex-1">
+                    <Input
+                      id="maxLength"
+                      type="number"
+                      step="0.1"
+                      placeholder="Max"
+                      value={filters.maxLength}
+                      onChange={(e) => setFilters({ ...filters, maxLength: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Genişlik */}
+              <div>
+                <Label className="text-sm text-slate-700 mb-2 block">Genişlik (metre)</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <Input
+                      id="minWidth"
+                      type="number"
+                      step="0.1"
+                      placeholder="Min"
+                      value={filters.minWidth}
+                      onChange={(e) => setFilters({ ...filters, minWidth: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                  <span className="text-slate-400">-</span>
+                  <div className="flex-1">
+                    <Input
+                      id="maxWidth"
+                      type="number"
+                      step="0.1"
+                      placeholder="Max"
+                      value={filters.maxWidth}
+                      onChange={(e) => setFilters({ ...filters, maxWidth: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Model Yılı */}
+              <div>
+                <Label className="text-sm text-slate-700 mb-2 block">Model Yılı</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <Input
+                      id="minModelYear"
+                      type="number"
+                      placeholder="Min"
+                      value={filters.minModelYear}
+                      onChange={(e) => setFilters({ ...filters, minModelYear: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                  <span className="text-slate-400">-</span>
+                  <div className="flex-1">
+                    <Input
+                      id="maxModelYear"
+                      type="number"
+                      placeholder="Max"
+                      value={filters.maxModelYear}
+                      onChange={(e) => setFilters({ ...filters, maxModelYear: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* İmkanlar */}
+              {amenities.length > 0 && (
+                <div>
+                  <Label className="text-sm text-slate-700 mb-2 block">İmkanlar</Label>
+                  <div className="max-h-48 overflow-y-auto space-y-2 border border-slate-200 rounded-lg p-3">
+                    {amenities.map((amenity) => (
+                      <div key={amenity.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`amenity-${amenity.id}`}
+                          checked={filters.selectedAmenities.includes(amenity.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFilters({
+                                ...filters,
+                                selectedAmenities: [...filters.selectedAmenities, amenity.id],
+                              });
+                            } else {
+                              setFilters({
+                                ...filters,
+                                selectedAmenities: filters.selectedAmenities.filter(id => id !== amenity.id),
+                              });
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-slate-300"
+                        />
+                        <Label htmlFor={`amenity-${amenity.id}`} className="text-sm cursor-pointer">
+                          {amenity.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -476,6 +679,152 @@ export default function FiltersPanel({
                   </div>
                 </div>
               </div>
+
+              {/* Tekne Türü */}
+              {boatTypes.length > 0 && (
+                <div>
+                  <Label className="text-sm text-slate-700 mb-2 block">Tekne Türü</Label>
+                  <Select
+                    value={filters.boatType}
+                    onValueChange={(value) => setFilters({ ...filters, boatType: value })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Tümü" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Tümü</SelectItem>
+                      {boatTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Uzunluk */}
+              <div>
+                <Label className="text-sm text-slate-700 mb-2 block">Uzunluk (metre)</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <Input
+                      id="minLengthDesktop"
+                      type="number"
+                      step="0.1"
+                      placeholder="Min"
+                      value={filters.minLength}
+                      onChange={(e) => setFilters({ ...filters, minLength: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                  <span className="text-slate-400">-</span>
+                  <div className="flex-1">
+                    <Input
+                      id="maxLengthDesktop"
+                      type="number"
+                      step="0.1"
+                      placeholder="Max"
+                      value={filters.maxLength}
+                      onChange={(e) => setFilters({ ...filters, maxLength: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Genişlik */}
+              <div>
+                <Label className="text-sm text-slate-700 mb-2 block">Genişlik (metre)</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <Input
+                      id="minWidthDesktop"
+                      type="number"
+                      step="0.1"
+                      placeholder="Min"
+                      value={filters.minWidth}
+                      onChange={(e) => setFilters({ ...filters, minWidth: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                  <span className="text-slate-400">-</span>
+                  <div className="flex-1">
+                    <Input
+                      id="maxWidthDesktop"
+                      type="number"
+                      step="0.1"
+                      placeholder="Max"
+                      value={filters.maxWidth}
+                      onChange={(e) => setFilters({ ...filters, maxWidth: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Model Yılı */}
+              <div>
+                <Label className="text-sm text-slate-700 mb-2 block">Model Yılı</Label>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <Input
+                      id="minModelYearDesktop"
+                      type="number"
+                      placeholder="Min"
+                      value={filters.minModelYear}
+                      onChange={(e) => setFilters({ ...filters, minModelYear: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                  <span className="text-slate-400">-</span>
+                  <div className="flex-1">
+                    <Input
+                      id="maxModelYearDesktop"
+                      type="number"
+                      placeholder="Max"
+                      value={filters.maxModelYear}
+                      onChange={(e) => setFilters({ ...filters, maxModelYear: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* İmkanlar */}
+              {amenities.length > 0 && (
+                <div>
+                  <Label className="text-sm text-slate-700 mb-2 block">İmkanlar</Label>
+                  <div className="max-h-48 overflow-y-auto space-y-2 border border-slate-200 rounded-lg p-3">
+                    {amenities.map((amenity) => (
+                      <div key={amenity.id} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id={`amenity-desktop-${amenity.id}`}
+                          checked={filters.selectedAmenities.includes(amenity.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFilters({
+                                ...filters,
+                                selectedAmenities: [...filters.selectedAmenities, amenity.id],
+                              });
+                            } else {
+                              setFilters({
+                                ...filters,
+                                selectedAmenities: filters.selectedAmenities.filter(id => id !== amenity.id),
+                              });
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-slate-300"
+                        />
+                        <Label htmlFor={`amenity-desktop-${amenity.id}`} className="text-sm cursor-pointer">
+                          {amenity.name}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -502,7 +851,7 @@ export default function FiltersPanel({
   );
 }
 
-// Filter listings based on filter state
+// Filter listings based on filter state (client-side only, amenities filter handled separately)
 export function filterListings(listings: any[], filters: FilterState, priceType: PriceType): any[] {
   const priceFieldMap: Record<PriceType, string> = {
     hourly: "price_hourly",
@@ -535,6 +884,27 @@ export function filterListings(listings: any[], filters: FilterState, priceType:
     const capacity = item.capacity || 0;
     if (filters.minCapacity && capacity < Number(filters.minCapacity)) return false;
     if (filters.maxCapacity && capacity > Number(filters.maxCapacity)) return false;
+
+    // Boat type filter
+    if (filters.boatType && item.boat_type !== filters.boatType) return false;
+
+    // Length filter
+    const length = item.length_metres || 0;
+    const lengthValue = typeof length === "number" ? length : Number(length || 0);
+    if (filters.minLength && lengthValue < Number(filters.minLength)) return false;
+    if (filters.maxLength && lengthValue > Number(filters.maxLength)) return false;
+
+    // Width filter
+    const width = item.width_metres || 0;
+    const widthValue = typeof width === "number" ? width : Number(width || 0);
+    if (filters.minWidth && widthValue < Number(filters.minWidth)) return false;
+    if (filters.maxWidth && widthValue > Number(filters.maxWidth)) return false;
+
+    // Model year filter
+    const modelYear = item.model_year || 0;
+    const modelYearValue = typeof modelYear === "number" ? modelYear : Number(modelYear || 0);
+    if (filters.minModelYear && modelYearValue < Number(filters.minModelYear)) return false;
+    if (filters.maxModelYear && modelYearValue > Number(filters.maxModelYear)) return false;
 
     return true;
   });
@@ -578,6 +948,22 @@ export function FiltersButton({
     else params.delete("minCapacity");
     if (filters.maxCapacity) params.set("maxCapacity", filters.maxCapacity);
     else params.delete("maxCapacity");
+    if (filters.boatType) params.set("boatType", filters.boatType);
+    else params.delete("boatType");
+    if (filters.minLength) params.set("minLength", filters.minLength);
+    else params.delete("minLength");
+    if (filters.maxLength) params.set("maxLength", filters.maxLength);
+    else params.delete("maxLength");
+    if (filters.minWidth) params.set("minWidth", filters.minWidth);
+    else params.delete("minWidth");
+    if (filters.maxWidth) params.set("maxWidth", filters.maxWidth);
+    else params.delete("maxWidth");
+    if (filters.minModelYear) params.set("minModelYear", filters.minModelYear);
+    else params.delete("minModelYear");
+    if (filters.maxModelYear) params.set("maxModelYear", filters.maxModelYear);
+    else params.delete("maxModelYear");
+    if (filters.selectedAmenities.length > 0) params.set("amenities", filters.selectedAmenities.join(","));
+    else params.delete("amenities");
     
     window.location.href = `/yachts?${params.toString()}`;
   };
@@ -592,13 +978,43 @@ export function FiltersButton({
         hasCaptain: initialFilters.hasCaptain ?? null,
         minCapacity: initialFilters.minCapacity || "",
         maxCapacity: initialFilters.maxCapacity || "",
+        boatType: initialFilters.boatType || "",
+        minLength: initialFilters.minLength || "",
+        maxLength: initialFilters.maxLength || "",
+        minWidth: initialFilters.minWidth || "",
+        maxWidth: initialFilters.maxWidth || "",
+        minModelYear: initialFilters.minModelYear || "",
+        maxModelYear: initialFilters.maxModelYear || "",
+        selectedAmenities: initialFilters.selectedAmenities || [],
       });
     }
-  }, [initialFilters?.type, initialFilters?.minPrice, initialFilters?.maxPrice, initialFilters?.hasCaptain, initialFilters?.minCapacity, initialFilters?.maxCapacity]);
+  }, [initialFilters]);
 
   // Calculate filtered count based on current filters (for preview in modal)
   const filteredListings = filterListings(listings, currentFilters, priceType);
-  const filteredCount = filteredListings.length;
+  const [filteredCount, setFilteredCount] = useState(filteredListings.length);
+  
+  useEffect(() => {
+    const calculateFilteredCount = async () => {
+      let filtered = filterListings(listings, currentFilters, priceType);
+      
+      // Apply amenities filter if needed
+      if (currentFilters.selectedAmenities.length > 0) {
+        const { data: listingsWithAmenities } = await supabase
+          .from('listing_amenities')
+          .select('listing_id')
+          .in('amenity_id', currentFilters.selectedAmenities);
+        
+        if (listingsWithAmenities) {
+          const listingIdsWithAmenities = new Set(listingsWithAmenities.map(la => la.listing_id));
+          filtered = filtered.filter(item => listingIdsWithAmenities.has(item.id));
+        }
+      }
+      
+      setFilteredCount(filtered.length);
+    };
+    calculateFilteredCount();
+  }, [listings, currentFilters, priceType]);
 
   // Check if any filter besides type is active (for red dot indicator)
   const hasNonTypeFilters = () => {
@@ -607,7 +1023,15 @@ export function FiltersButton({
       currentFilters.maxPrice !== "" ||
       currentFilters.hasCaptain !== null ||
       currentFilters.minCapacity !== "" ||
-      currentFilters.maxCapacity !== ""
+      currentFilters.maxCapacity !== "" ||
+      currentFilters.boatType !== "" ||
+      currentFilters.minLength !== "" ||
+      currentFilters.maxLength !== "" ||
+      currentFilters.minWidth !== "" ||
+      currentFilters.maxWidth !== "" ||
+      currentFilters.minModelYear !== "" ||
+      currentFilters.maxModelYear !== "" ||
+      currentFilters.selectedAmenities.length > 0
     );
   };
 

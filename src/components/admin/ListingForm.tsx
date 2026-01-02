@@ -47,6 +47,8 @@ export default function ListingForm({ listing }: ListingFormProps) {
   
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [amenities, setAmenities] = useState<any[]>([]);
+  const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: listing?.title || "",
     location: listing?.location || "",
@@ -66,10 +68,44 @@ export default function ListingForm({ listing }: ListingFormProps) {
     captain_phone: listing?.captain_phone || "",
     captain_email: listing?.captain_email || "",
     commission_rate: listing?.commission_rate || "",
+    // New fields
+    model_year: listing?.model_year || "",
+    renovation_year: listing?.renovation_year || "",
+    cruising_capacity: listing?.cruising_capacity || "",
+    wc_count: listing?.wc_count || "",
+    length_metres: listing?.length_metres || "",
+    width_metres: listing?.width_metres || "",
+    boat_type: listing?.boat_type || "",
+    guest_bathroom_count: listing?.guest_bathroom_count || "",
+    guest_shower_count: listing?.guest_shower_count || "",
+    check_in_time: listing?.check_in_time || "",
+    check_out_time: listing?.check_out_time || "",
+    rental_model: listing?.rental_model || "",
+    fuel_price_included: listing?.fuel_price_included ?? false,
   });
 
   const [images, setImages] = useState<string[]>(listing?.image_urls || []);
   const [uploadingImages, setUploadingImages] = useState<string[]>([]);
+
+  // Load amenities and selected amenities
+  useEffect(() => {
+    const loadAmenities = async () => {
+      const supabase = await getAuthenticatedClient();
+      const { data } = await supabase.from('amenities').select('*').order('name');
+      if (data) setAmenities(data);
+
+      if (listing?.id) {
+        const { data: listingAmenities } = await supabase
+          .from('listing_amenities')
+          .select('amenity_id')
+          .eq('listing_id', listing.id);
+        if (listingAmenities) {
+          setSelectedAmenities(listingAmenities.map((la: any) => la.amenity_id));
+        }
+      }
+    };
+    loadAmenities();
+  }, [listing?.id]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -148,18 +184,52 @@ export default function ListingForm({ listing }: ListingFormProps) {
         captain_email: formData.captain_email || null,
         commission_rate: formData.commission_rate ? parseInt(formData.commission_rate.toString()) : null,
         image_urls: images.length > 0 ? images : null,
+        // New fields
+        model_year: formData.model_year ? parseInt(formData.model_year.toString()) : null,
+        renovation_year: formData.renovation_year ? parseInt(formData.renovation_year.toString()) : null,
+        cruising_capacity: formData.cruising_capacity ? parseInt(formData.cruising_capacity.toString()) : null,
+        wc_count: formData.wc_count ? parseInt(formData.wc_count.toString()) : null,
+        length_metres: formData.length_metres ? parseFloat(formData.length_metres.toString()) : null,
+        width_metres: formData.width_metres ? parseFloat(formData.width_metres.toString()) : null,
+        boat_type: formData.boat_type || null,
+        guest_bathroom_count: formData.guest_bathroom_count ? parseInt(formData.guest_bathroom_count.toString()) : null,
+        guest_shower_count: formData.guest_shower_count ? parseInt(formData.guest_shower_count.toString()) : null,
+        check_in_time: formData.check_in_time || null,
+        check_out_time: formData.check_out_time || null,
+        rental_model: formData.rental_model || null,
+        fuel_price_included: formData.fuel_price_included ?? false,
       };
 
+      let listingId: string;
       if (isEdit) {
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from("listings")
           .update(dataToSubmit)
-          .eq("id", listing.id);
+          .eq("id", listing.id)
+          .select()
+          .single();
 
         if (error) throw error;
+        listingId = listing.id;
       } else {
-        const { error } = await supabase.from("listings").insert([dataToSubmit]);
+        const { error, data } = await supabase.from("listings").insert([dataToSubmit]).select().single();
         if (error) throw error;
+        listingId = data.id;
+      }
+
+      // Update amenities
+      if (listingId) {
+        // Delete existing amenities
+        await supabase.from('listing_amenities').delete().eq('listing_id', listingId);
+        
+        // Insert new amenities
+        if (selectedAmenities.length > 0) {
+          const amenitiesToInsert = selectedAmenities.map(amenityId => ({
+            listing_id: listingId,
+            amenity_id: amenityId
+          }));
+          await supabase.from('listing_amenities').insert(amenitiesToInsert);
+        }
       }
 
       router.push("/admin");
@@ -239,15 +309,181 @@ export default function ListingForm({ listing }: ListingFormProps) {
               <CardDescription>Tekne özelliklerini belirleyin</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="capacity">Kapasite (Kişi) *</Label>
-                <Input
-                  id="capacity"
-                  type="number"
-                  value={formData.capacity}
-                  onChange={(e) => handleInputChange("capacity", e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="capacity">Kapasite (Kişi) *</Label>
+                  <Input
+                    id="capacity"
+                    type="number"
+                    value={formData.capacity}
+                    onChange={(e) => handleInputChange("capacity", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="boat_type">Tekne Türü</Label>
+                  <Input
+                    id="boat_type"
+                    value={formData.boat_type}
+                    onChange={(e) => handleInputChange("boat_type", e.target.value)}
+                    placeholder="Örn: Motoryat, Gulet, Katamaran"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="model_year">Model Yılı</Label>
+                  <Input
+                    id="model_year"
+                    type="number"
+                    value={formData.model_year}
+                    onChange={(e) => handleInputChange("model_year", e.target.value)}
+                    placeholder="Örn: 1999"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="renovation_year">Yenileme Yılı</Label>
+                  <Input
+                    id="renovation_year"
+                    type="number"
+                    value={formData.renovation_year}
+                    onChange={(e) => handleInputChange("renovation_year", e.target.value)}
+                    placeholder="Örn: 2019"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cruising_capacity">Seyir Kapasitesi</Label>
+                  <Input
+                    id="cruising_capacity"
+                    type="number"
+                    value={formData.cruising_capacity}
+                    onChange={(e) => handleInputChange("cruising_capacity", e.target.value)}
+                    placeholder="Örn: 7"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="wc_count">WC Sayısı</Label>
+                  <Input
+                    id="wc_count"
+                    type="number"
+                    value={formData.wc_count}
+                    onChange={(e) => handleInputChange("wc_count", e.target.value)}
+                    placeholder="Örn: 1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="length_metres">Uzunluk (metre)</Label>
+                  <Input
+                    id="length_metres"
+                    type="number"
+                    step="0.1"
+                    value={formData.length_metres}
+                    onChange={(e) => handleInputChange("length_metres", e.target.value)}
+                    placeholder="Örn: 18"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="width_metres">Genişlik (metre)</Label>
+                  <Input
+                    id="width_metres"
+                    type="number"
+                    step="0.1"
+                    value={formData.width_metres}
+                    onChange={(e) => handleInputChange("width_metres", e.target.value)}
+                    placeholder="Örn: 5.5"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guest_bathroom_count">Misafir Banyosu Sayısı</Label>
+                  <Input
+                    id="guest_bathroom_count"
+                    type="number"
+                    value={formData.guest_bathroom_count}
+                    onChange={(e) => handleInputChange("guest_bathroom_count", e.target.value)}
+                    placeholder="Örn: 1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guest_shower_count">Misafir Duş Sayısı</Label>
+                  <Input
+                    id="guest_shower_count"
+                    type="number"
+                    value={formData.guest_shower_count}
+                    onChange={(e) => handleInputChange("guest_shower_count", e.target.value)}
+                    placeholder="Örn: 1"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="check_in_time">Check-in Saati</Label>
+                  <Input
+                    id="check_in_time"
+                    type="time"
+                    value={formData.check_in_time}
+                    onChange={(e) => handleInputChange("check_in_time", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="check_out_time">Check-out Saati</Label>
+                  <Input
+                    id="check_out_time"
+                    type="time"
+                    value={formData.check_out_time}
+                    onChange={(e) => handleInputChange("check_out_time", e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="rental_model">Kiralama Modeli</Label>
+                  <Input
+                    id="rental_model"
+                    value={formData.rental_model}
+                    onChange={(e) => handleInputChange("rental_model", e.target.value)}
+                    placeholder="Örn: Mürettebatlı Kiralama"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2 pt-6">
+                    <input
+                      type="checkbox"
+                      id="fuel_price_included"
+                      checked={formData.fuel_price_included}
+                      onChange={(e) => handleInputChange("fuel_price_included", e.target.checked)}
+                      className="w-4 h-4 rounded border-slate-300"
+                    />
+                    <Label htmlFor="fuel_price_included" className="cursor-pointer">
+                      Yakıt Fiyatı Seyahate Dahil
+                    </Label>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* İmkanlar */}
+          <Card>
+            <CardHeader>
+              <CardTitle>İmkanlar</CardTitle>
+              <CardDescription>Tekne imkanlarını seçin</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-64 overflow-y-auto p-2 border border-slate-200 rounded-lg">
+                {amenities.map((amenity) => (
+                  <div key={amenity.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`amenity-${amenity.id}`}
+                      checked={selectedAmenities.includes(amenity.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedAmenities([...selectedAmenities, amenity.id]);
+                        } else {
+                          setSelectedAmenities(selectedAmenities.filter(id => id !== amenity.id));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-300"
+                    />
+                    <Label htmlFor={`amenity-${amenity.id}`} className="text-sm cursor-pointer">
+                      {amenity.name}
+                    </Label>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
